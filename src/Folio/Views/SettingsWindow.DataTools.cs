@@ -1,0 +1,416 @@
+﻿using Folio.Helpers;
+using Folio.Models;
+using Folio.Platform;
+using Folio.Services;
+using Folio.ViewModels;
+using System.ComponentModel;
+using Microsoft.UI;
+using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Shapes;
+using System.Runtime.InteropServices;
+using Windows.System;
+using WinRT.Interop;
+
+namespace Folio.Views;
+
+public sealed partial class SettingsWindow
+{
+    private async void ClearQuickCaptureDataButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (SettingsRoot.XamlRoot is null)
+        {
+            return;
+        }
+
+        var (recordCount, recentCount) = await _dataActions.GetQuickCaptureCountsAsync();
+        var dialog = new ContentDialog
+        {
+            XamlRoot = SettingsRoot.XamlRoot,
+            Title = _localizationService.T("QuickCapture.ClearDataTitle"),
+            PrimaryButtonText = _localizationService.T("QuickCapture.ClearData"),
+            CloseButtonText = _localizationService.T("Common.Cancel"),
+            DefaultButton = ContentDialogButton.Close,
+            Content = new TextBlock
+            {
+                Text = _localizationService.Format(
+                    "QuickCapture.ClearDataDescriptionWithCount",
+                    recordCount,
+                    recentCount),
+                TextWrapping = TextWrapping.Wrap
+            }
+        };
+
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+        {
+            return;
+        }
+
+        await _dataActions.ClearQuickCaptureDataAsync();
+        await ViewModel.RefreshQuickCaptureImageCacheInfoAsync();
+    }
+
+    private async void ClearQuickCaptureRecentButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (SettingsRoot.XamlRoot is null)
+        {
+            return;
+        }
+
+        var (_, recentCount) = await _dataActions.GetQuickCaptureCountsAsync();
+        var dialog = new ContentDialog
+        {
+            XamlRoot = SettingsRoot.XamlRoot,
+            Title = _localizationService.T("QuickCapture.ClearRecentTitle"),
+            PrimaryButtonText = _localizationService.T("QuickCapture.ClearRecent"),
+            CloseButtonText = _localizationService.T("Common.Cancel"),
+            DefaultButton = ContentDialogButton.Close,
+            Content = new TextBlock
+            {
+                Text = _localizationService.Format(
+                    "QuickCapture.ClearRecentDescriptionWithCount",
+                    recentCount),
+                TextWrapping = TextWrapping.Wrap
+            }
+        };
+
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+        {
+            return;
+        }
+
+        await _dataActions.ClearQuickCaptureRecentAsync();
+        await ViewModel.RefreshQuickCaptureImageCacheInfoAsync();
+    }
+
+    private async void CleanupQuickCaptureImageCacheButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (SettingsRoot.XamlRoot is null)
+        {
+            return;
+        }
+
+        var result = await _dataActions.ClearUnusedQuickCaptureImageCacheAsync();
+        await ViewModel.RefreshQuickCaptureImageCacheInfoAsync();
+
+        var dialog = new ContentDialog
+        {
+            XamlRoot = SettingsRoot.XamlRoot,
+            Title = _localizationService.T("Settings.QuickCapture.ImageCacheCleanupTitle"),
+            CloseButtonText = _localizationService.T("Common.GotIt"),
+            DefaultButton = ContentDialogButton.Close,
+            Content = new TextBlock
+            {
+                Text = _localizationService.Format(
+                    "Settings.QuickCapture.ImageCacheCleanupDescription",
+                    result.DeletedFileCount,
+                    ViewModel.FormatBytes(result.DeletedBytes)),
+                TextWrapping = TextWrapping.Wrap
+            }
+        };
+
+        await dialog.ShowAsync();
+    }
+
+    private void ShowOnboardingButton_Click(object sender, RoutedEventArgs e)
+    {
+        _appActions.ShowOnboarding();
+    }
+
+    private async void ShowAboutMeButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (SettingsRoot.XamlRoot is null)
+        {
+            return;
+        }
+
+        AboutMeDialog.XamlRoot = SettingsRoot.XamlRoot;
+        AboutMeDialog.CloseButtonText = _localizationService.T("Settings.Dialog.AboutMeClose");
+        await AboutMeDialog.ShowAsync();
+    }
+
+    private void CleanupManagedStorageButton_Click(object sender, RoutedEventArgs e)
+    {
+        NavigateToSettingsSection("ManagedStorage");
+    }
+
+    private void RefreshManagedStorageButton_Click(object sender, RoutedEventArgs e)
+    {
+        _ = RefreshManagedStorageFolderListAsync();
+    }
+
+    private async Task RefreshManagedStorageFolderListAsync()
+    {
+        ManagedStorageFolderList.Children.Clear();
+        ManagedStorageEmptyState.Visibility = Visibility.Visible;
+        ManagedStorageFolderList.Visibility = Visibility.Collapsed;
+
+        // Deep review R18 (A-#24): the orphan scan recursively counts every
+        // candidate directory tree on the MAIN process with a 10-MINUTE IPC
+        // ceiling — running it inline on the UI thread froze the settings
+        // host for as long as that scan took. It now runs on a pool thread;
+        // the section shows the empty state until results arrive.
+        IReadOnlyList<ManagedStorageFolderCleanupCandidate>? candidates =
+            await Task.Run(() => _widgetActions.GetOrphanManagedStorageFolders());
+
+        if (candidates is not { } list)
+        {
+            ManagedStorageEmptyState.Visibility = Visibility.Visible;
+            ManagedStorageFolderList.Visibility = Visibility.Collapsed;
+            ManagedStorageSummaryText.Text = _localizationService.T("Settings.ManagedStorage.SummaryUnavailable");
+            return;
+        }
+        bool hasCandidates = list.Count > 0;
+        ManagedStorageEmptyState.Visibility = hasCandidates ? Visibility.Collapsed : Visibility.Visible;
+        ManagedStorageFolderList.Visibility = hasCandidates ? Visibility.Visible : Visibility.Collapsed;
+        ManagedStorageSummaryText.Text = hasCandidates
+            ? _localizationService.Format("Settings.ManagedStorage.Summary", list.Count)
+            : _localizationService.T("Settings.ManagedStorage.SummaryEmpty");
+
+        for (int index = 0; index < list.Count; index++)
+        {
+            if (index > 0)
+            {
+                ManagedStorageFolderList.Children.Add(CreateSettingDivider());
+            }
+
+            ManagedStorageFolderList.Children.Add(CreateManagedStorageFolderRow(list[index]));
+        }
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            CollectResponsiveRows(SettingsRoot);
+            UpdateResponsiveLayout(GetWindowWidth());
+        });
+    }
+
+    private Grid CreateManagedStorageFolderRow(ManagedStorageFolderCleanupCandidate candidate)
+    {
+        var row = new Grid
+        {
+            Style = (Style)SettingsRoot.Resources["SettingRowStyle"]
+        };
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var textPanel = new StackPanel
+        {
+            Style = (Style)SettingsRoot.Resources["SettingTextPanelStyle"]
+        };
+        textPanel.Children.Add(new TextBlock
+        {
+            Text = candidate.Name,
+            Style = (Style)SettingsRoot.Resources["SettingTitleTextStyle"]
+        });
+        textPanel.Children.Add(new TextBlock
+        {
+            Text = _localizationService.Format("Settings.ManagedStorage.ItemCount", candidate.ItemCount),
+            Style = (Style)SettingsRoot.Resources["SettingDescriptionTextStyle"]
+        });
+        textPanel.Children.Add(new TextBlock
+        {
+            Text = candidate.Path,
+            MaxLines = 1,
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            Style = (Style)SettingsRoot.Resources["SettingDescriptionTextStyle"]
+        });
+
+        var actionsPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Center,
+            Spacing = 8
+        };
+
+        string folderPath = candidate.Path;
+        string folderName = candidate.Name;
+        actionsPanel.Children.Add(CreateManagedStorageActionButton(
+            "Settings.ManagedStorage.RestoreAction",
+            "Settings.ManagedStorage.RestoreTooltip",
+            async () => await RestoreManagedStorageFolderAsync(folderPath)));
+        actionsPanel.Children.Add(CreateManagedStorageActionButton(
+            "Settings.ManagedStorage.OpenAction",
+            "Settings.ManagedStorage.OpenTooltip",
+            async () => await OpenManagedStorageFolderAsync(folderPath)));
+        actionsPanel.Children.Add(CreateManagedStorageActionButton(
+            "Settings.ManagedStorage.MoveAction",
+            "Settings.ManagedStorage.MoveTooltip",
+            async () => await MoveManagedStorageFolderToDesktopAsync(folderPath, folderName)));
+        actionsPanel.Children.Add(CreateManagedStorageActionButton(
+            "Settings.ManagedStorage.DeleteAction",
+            "Settings.ManagedStorage.DeleteTooltip",
+            async () => await DeleteManagedStorageFolderAsync(folderPath, folderName)));
+
+        row.Children.Add(textPanel);
+        row.Children.Add(actionsPanel);
+        Grid.SetColumn(actionsPanel, 1);
+
+        return row;
+    }
+
+    private Button CreateManagedStorageActionButton(string textKey, string tooltipKey, Func<Task> action)
+    {
+        var button = new Button
+        {
+            Style = (Style)SettingsRoot.Resources["CompactTextActionButtonStyle"],
+            Content = _localizationService.T(textKey)
+        };
+        ToolTipService.SetToolTip(button, _localizationService.T(tooltipKey));
+        button.Click += async (_, _) => await action();
+        return button;
+    }
+
+    private Border CreateSettingDivider()
+    {
+        return new Border
+        {
+            Style = (Style)SettingsRoot.Resources["SettingDividerStyle"]
+        };
+    }
+
+    private async Task RestoreManagedStorageFolderAsync(string folderPath)
+    {
+        if (!_widgetActions.IsHostAvailable)
+        {
+            return;
+        }
+
+        try
+        {
+            int restoredCount = await _widgetActions.RestoreOrphanManagedStorageFoldersAsync([folderPath]);
+            _ = RefreshManagedStorageFolderListAsync();
+            await ShowInfoDialogAsync(
+                _localizationService.T("Settings.ManagedStorage.RestoreCompleteTitle"),
+                _localizationService.Format("Settings.ManagedStorage.RestoreCompleteBody", restoredCount));
+        }
+        catch (Exception ex)
+        {
+            _ = RefreshManagedStorageFolderListAsync();
+            await ShowInfoDialogAsync(
+                _localizationService.T("Settings.ManagedStorage.ActionFailedTitle"),
+                _localizationService.Format("Settings.ManagedStorage.ActionFailedBody", ex.Message));
+        }
+    }
+
+    private async Task OpenManagedStorageFolderAsync(string folderPath)
+    {
+        if (!Directory.Exists(folderPath))
+        {
+            _ = RefreshManagedStorageFolderListAsync();
+            await ShowInfoDialogAsync(
+                _localizationService.T("Settings.ManagedStorage.ActionFailedTitle"),
+                _localizationService.T("Settings.ManagedStorage.MissingFolder"));
+            return;
+        }
+
+        Win32Helper.OpenFile(folderPath);
+    }
+
+    private async Task MoveManagedStorageFolderToDesktopAsync(string folderPath, string folderName)
+    {
+        if (!_widgetActions.IsHostAvailable ||
+            !await ConfirmManagedStorageActionAsync(
+                _localizationService.T("Settings.ManagedStorage.MoveConfirmTitle"),
+                _localizationService.Format("Settings.ManagedStorage.MoveConfirmBody", folderName),
+                _localizationService.T("Common.Move")))
+        {
+            return;
+        }
+
+        try
+        {
+            await _widgetActions.MoveOrphanManagedStorageFolderContentsToDesktopAsync(folderPath);
+            _ = RefreshManagedStorageFolderListAsync();
+            await ShowInfoDialogAsync(
+                _localizationService.T("Settings.ManagedStorage.MoveCompleteTitle"),
+                _localizationService.Format("Settings.ManagedStorage.MoveCompleteBody", folderName));
+        }
+        catch (Exception ex)
+        {
+            _ = RefreshManagedStorageFolderListAsync();
+            await ShowInfoDialogAsync(
+                _localizationService.T("Settings.ManagedStorage.ActionFailedTitle"),
+                _localizationService.Format("Settings.ManagedStorage.ActionFailedBody", ex.Message));
+        }
+    }
+
+    private async Task DeleteManagedStorageFolderAsync(string folderPath, string folderName)
+    {
+        if (!_widgetActions.IsHostAvailable ||
+            !await ConfirmManagedStorageActionAsync(
+                _localizationService.T("Settings.ManagedStorage.DeleteConfirmTitle"),
+                _localizationService.Format("Settings.ManagedStorage.DeleteConfirmBody", folderName),
+                _localizationService.T("Common.Delete")))
+        {
+            return;
+        }
+
+        try
+        {
+            await _widgetActions.DeleteOrphanManagedStorageFolderAsync(
+                folderPath,
+                _hWnd);
+            _ = RefreshManagedStorageFolderListAsync();
+            await ShowInfoDialogAsync(
+                _localizationService.T("Settings.ManagedStorage.DeleteCompleteTitle"),
+                _localizationService.Format("Settings.ManagedStorage.DeleteCompleteBody", folderName));
+        }
+        catch (Exception ex)
+        {
+            _ = RefreshManagedStorageFolderListAsync();
+            await ShowInfoDialogAsync(
+                _localizationService.T("Settings.ManagedStorage.ActionFailedTitle"),
+                _localizationService.Format("Settings.ManagedStorage.ActionFailedBody", ex.Message));
+        }
+    }
+
+    private async Task<bool> ConfirmManagedStorageActionAsync(string title, string message, string primaryButtonText)
+    {
+        if (SettingsRoot.XamlRoot is null)
+        {
+            return false;
+        }
+
+        var dialog = new ContentDialog
+        {
+            XamlRoot = SettingsRoot.XamlRoot,
+            Title = title,
+            PrimaryButtonText = primaryButtonText,
+            CloseButtonText = _localizationService.T("Common.Cancel"),
+            DefaultButton = ContentDialogButton.Close,
+            Content = new TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap
+            }
+        };
+
+        return await dialog.ShowAsync() == ContentDialogResult.Primary;
+    }
+
+    private async Task ShowInfoDialogAsync(string title, string message)
+    {
+        var dialog = new ContentDialog
+        {
+            XamlRoot = SettingsRoot.XamlRoot,
+            Title = title,
+            CloseButtonText = _localizationService.T("Common.GotIt"),
+            DefaultButton = ContentDialogButton.Close,
+            Content = new TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap
+            }
+        };
+
+        // Coordinator-routed like the update dialogs: this surfaces failure
+        // notices whose triggers can land while another dialog is open.
+        await ShowDialogWhenFreeAsync(() => dialog);
+    }
+}

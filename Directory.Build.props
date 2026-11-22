@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <Authors>Mark Renier B. Fostanes</Authors>
+    <Company>Mark Renier B. Fostanes</Company>
+    <Copyright>Copyright (C) 2026 Mark Renier B. Fostanes</Copyright>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <NuGetLockFilePath Condition="'$(PublishAot)' == 'true'">$(MSBuildProjectDirectory)\packages.aot.lock.json</NuGetLockFilePath>
+  </PropertyGroup>
+</Project>
