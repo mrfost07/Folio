@@ -262,6 +262,8 @@ Source: "{#MyAppReleaseDir}\Folio.Updater.*"; DestDir: "{app}"; Flags: ignorever
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\Assets\folio.ico"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\Assets\folio.ico"; Tasks: desktopicon
+Name: "{usersendto}\Folio (one widget)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--group-desktop-one"; WorkingDir: "{app}"; IconFilename: "{app}\Assets\folio.ico"
+Name: "{usersendto}\Folio (split by type)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--group-desktop-by-type"; WorkingDir: "{app}"; IconFilename: "{app}\Assets\folio.ico"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runasoriginaluser

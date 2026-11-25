@@ -1,10 +1,12 @@
-﻿using System.Drawing;
+using System.Drawing;
 using Microsoft.UI.Windowing;
 
 namespace Folio.Helpers;
 
 public static class AppBranding
 {
+    public const string WebsiteUrl = "https://mrfost07.github.io/folio/";
+
     private const string LogoIconFileName = "folio.ico";
     private const string TrayIconLightFileName = "folio-tray-light.ico";
     private const string TrayIconDarkFileName = "folio-tray-dark.ico";

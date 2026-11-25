@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -6,15 +6,16 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Folio.Helpers;
 using Folio.Models;
 
 namespace Folio.Services;
 
 public sealed partial class AppUpdateService : IAppUpdateService
 {
-    public const string DefaultManifestUrl = "https://folio.fun/update/stable.json";
+    public const string DefaultManifestUrl = AppBranding.WebsiteUrl + "update/stable.json";
     public const string DefaultGitHubLatestReleaseApiUrl = "https://api.github.com/repos/mrfost07/Folio/releases/latest";
-    public const string DefaultManualDownloadUrl = "https://folio.fun/download";
+    public const string DefaultManualDownloadUrl = AppBranding.WebsiteUrl + "download/";
 
     private readonly HttpClient _httpClient;
     private readonly string _manifestUrl;

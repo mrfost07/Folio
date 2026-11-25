@@ -80,39 +80,32 @@ jobs:
           }
 
           $iscc = @(
-            (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source,
             "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
-            "$env:ProgramFiles\Inno Setup 6\ISCC.exe"
+            "$env:ProgramFiles\Inno Setup 6\ISCC.exe",
+            (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source
           ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) } |
             Select-Object -First 1
           if (-not $iscc) {
             throw "The runner image does not expose ISCC.exe."
           }
-          $innoVersion = (Get-Item -LiteralPath $iscc).VersionInfo.FileVersion
-          # Some Inno installations do not stamp ISCC.exe version info; fall
-          # back to the uninstall registration before applying the floor. The
-          # floor guards the installer language arbitration the /LANG update
-          # flow relies on (Folio.Updater Program.cs pins /LANG; the
-          # silent-mode no-dialog + /LANG-overrides-previous-language behavior
-          # was verified against Inno Setup 6.4+ sources).
-          if ($innoVersion -in @('', '0.0.0.0')) {
-            foreach ($hive in 'HKLM:', 'HKCU:') {
-              $innoReg = Get-ItemProperty "$hive\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Inno Setup 6_is1" -ErrorAction SilentlyContinue
-              if ($innoReg -and $innoReg.DisplayVersion) {
-                $innoVersion = $innoReg.DisplayVersion
-                break
-              }
-            }
-          }
-          Write-Host "Inno Setup compiler: $iscc ($innoVersion)"
-          $innoParsed = $null
-          if ([version]::TryParse($innoVersion, [ref]$innoParsed)) {
-            if ($innoParsed -lt [version]'6.4.0') {
-              throw "Inno Setup $innoVersion is below the required 6.4.0 (installer language arbitration floor for the /LANG update flow)."
-            }
-          }
-          else {
-            Write-Warning "Inno Setup version '$innoVersion' could not be parsed; skipped the 6.4.0 floor check."
+          # Check the compiler rather than the version resource of a package-manager shim.
+          $probe = Join-Path $env:RUNNER_TEMP 'folio-inno-compiler.iss'
+          @'
+          #preproc ispp
+          #if Ver < EncodeVer(6,4,0)
+            #error Folio requires Inno Setup 6.4 or newer for installer language arbitration.
+          #endif
+          [Setup]
+          AppName=Folio compiler probe
+          AppVersion=1.0
+          DefaultDirName={autopf}\Folio compiler probe
+          Output=no
+          Uninstallable=no
+          '@ | Set-Content -LiteralPath $probe -Encoding ascii
+          Write-Host "Verifying Inno Setup compiler: $iscc"
+          & $iscc /Q $probe
+          if ($LASTEXITCODE -ne 0) {
+            throw "Inno Setup compiler probe failed with exit $LASTEXITCODE."
           }
 
           $kitsBin = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
@@ -150,6 +143,7 @@ jobs:
             .artifacts/stage7c1-${{ matrix.rid }}/direct-publish-files.txt
             .artifacts/stage7c1-${{ matrix.rid }}/inno-compile.log
             .artifacts/stage7c1-${{ matrix.rid }}/direct-installer/*.exe
+            .artifacts/stage7c1-${{ matrix.rid }}/direct-installer/*.exe.sha256
             .artifacts/stage7c1-${{ matrix.rid }}/store/*.msixupload
             .artifacts/stage7c1-${{ matrix.rid }}/store/**/*Folio*.msix
             .artifacts/stage7c1-${{ matrix.rid }}/store/**/*Folio*.appxsym

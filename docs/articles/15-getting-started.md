@@ -33,7 +33,7 @@ Folio 不需要以管理员身份运行。不要在快捷方式兼容性设置�
 
 Direct 安装包可以从官网或 GitHub Release 获取。
 
-- 官网：<https://folio.fun>
+- 官网：<https://mrfost07.github.io/folio/>
 - GitHub Release：<https://github.com/mrfost07/Folio/releases/latest>
 - 文件名：`Folio_Setup_<版本>_x64.exe`（Intel / AMD）或 `Folio_Setup_<版本>_arm64.exe`（骁龙、Surface Pro X 等 Windows on ARM 设备）
 

@@ -192,7 +192,7 @@ Direct 官网版继续使用现有 Inno 链路，但零售载荷统一采用 Ful
 Direct 应用内更新默认先读取：
 
 ```text
-https://folio.fun/update/stable.json
+https://mrfost07.github.io/folio/update/stable.json
 ```
 
 如果该清单不可用，客户端会兜底读取 GitHub 最新 Release API。官网清单仍然是主通道，因为它可以控制稳定版本、国内网盘入口、SHA-256、灰度和回滚；GitHub 兜底只用于防止清单漏发时完全无法检查更新。
@@ -219,7 +219,7 @@ https://folio.fun/update/stable.json
    - （签名版）`Get-AuthenticodeSignature` 显示签名者为 SignPath 证书且带 RFC 3161 时间戳，签名者 CN 与发版门禁 `expected-signer-cn` 输入一致
 
 3. 更新并部署官网清单（**发布日硬门**：跳过此步时，manifest 若仍指旧版本，全部存量直装用户拿到假「已是最新」，且 GitHub 兜底不会触发）：
-   - `folio-site/public/update/stable.json`
+   - `folio/update/stable.json` in `mrfost07/mrfost07.github.io`
    - `version`
    - `downloadUrl`
    - `sha256`
@@ -236,7 +236,7 @@ https://folio.fun/update/stable.json
 4. 部署后从公网验证：
 
 ```powershell
-curl.exe -i https://folio.fun/update/stable.json
+curl.exe -i https://mrfost07.github.io/folio/update/stable.json
 ```
 
 预期：

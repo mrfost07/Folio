@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Collections.ObjectModel;
 using System.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -44,7 +44,7 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     private const string AnimationPresetEmphasized = "Emphasized";
     private const string AnimationPresetCustom = "Custom";
     private const string RepositoryUrl = "https://github.com/mrfost07/Folio";
-    private const string OfficialWebsiteUrl = "https://folio.fun";
+    private const string OfficialWebsiteUrl = AppBranding.WebsiteUrl;
     private const string MicrosoftStoreProductId = "9PBZSNB4D69H";
     private const string MicrosoftStoreCampaignId = "folio_about_support";
     private const string MicrosoftStoreUrl =

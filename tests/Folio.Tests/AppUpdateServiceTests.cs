@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -110,9 +110,9 @@ public sealed class AppUpdateServiceTests : IDisposable
         };
 
         Assert.Equal(
-            "https://folio.fun/download",
+            "https://mrfost07.github.io/folio/download/",
             SettingsViewModel.GetManualUpdateDownloadUrl(manifest));
-        Assert.Equal("https://folio.fun/download", SettingsViewModel.GetManualUpdateDownloadUrl(null));
+        Assert.Equal("https://mrfost07.github.io/folio/download/", SettingsViewModel.GetManualUpdateDownloadUrl(null));
     }
 
     [Theory]

@@ -293,7 +293,7 @@ docs\releases               release copy and test checklists
 
 Folio is maintained by Mark Renier B. Fostanes. Bug reports, feature requests, translation feedback, and UI feedback are welcome through [GitHub Issues](https://github.com/mrfost07/Folio/issues).
 
-You can also visit [folio.fun](https://folio.fun) or use the contact information in the app's About page.
+Visit the [Folio website](https://mrfost07.github.io/folio/) or use the contact information in the app's About page.
 
 ## Maintainer, upstream, and license
 
