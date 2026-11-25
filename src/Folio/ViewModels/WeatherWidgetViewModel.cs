@@ -488,7 +488,7 @@ public sealed partial class WeatherWidgetViewModel : ObservableObject, IDisposab
     public Visibility WindVisibility => _showWind ? Visibility.Visible : Visibility.Collapsed;
     public Visibility PressureVisibility => _showPressure ? Visibility.Visible : Visibility.Collapsed;
     public Visibility PrimaryMetricsVisibility =>
-        (_showHumidity || _showWind || _showPrecipitation) &&
+        !IsForecastFirst && (_showHumidity || _showWind || _showPrecipitation) &&
         (_layoutMode switch
         {
             "Compact" =>
@@ -525,6 +525,7 @@ public sealed partial class WeatherWidgetViewModel : ObservableObject, IDisposab
     // Expanded layout: progressive visibility based on available height
     public Visibility ExpandedSunriseVisibility =>
         _layoutMode == "Expanded" &&
+        !IsForecastFirst &&
         _showSunrise &&
         _lastAvailableHeight >= ExpandedSunriseMinimumHeight
             ? Visibility.Visible
@@ -565,6 +566,7 @@ public sealed partial class WeatherWidgetViewModel : ObservableObject, IDisposab
 
     public Visibility ExpandedSecondaryMetricsVisibility =>
         _layoutMode == "Expanded" &&
+        !IsForecastFirst &&
         _lastAvailableHeight >= ExpandedSecondaryMetricsMinimumHeight &&
         (_showUvIndex || _showPressure)
             ? Visibility.Visible
@@ -625,6 +627,7 @@ public sealed partial class WeatherWidgetViewModel : ObservableObject, IDisposab
     }
 
     public bool UsesRichSkin => _skin == SettingsService.WeatherSkinRich;
+    private bool IsForecastFirst => _skin == WeatherOptionKinds.SkinForecast && _showForecast;
     public Visibility RichSkinVisibility => UsesRichSkin ? Visibility.Visible : Visibility.Collapsed;
     public CornerRadius WidgetCornerRadius => new(
         WidgetCompactBoundsCalculator.ResolveOuterCornerRadius(
@@ -794,6 +797,7 @@ public sealed partial class WeatherWidgetViewModel : ObservableObject, IDisposab
 
     private void ApplyWeatherSettings(AppSettings settings)
     {
+        WeatherLayoutPresentationState previousLayout = CaptureLayoutPresentationState();
         bool changed = false;
 
         if (_temperatureUnit != settings.WeatherTemperatureUnit)
@@ -854,6 +858,10 @@ public sealed partial class WeatherWidgetViewModel : ObservableObject, IDisposab
         }
 
         UpdateRefreshInterval();
+        if (!_isResponsiveLayoutTransitionActive && _lastAvailableWidth > 0 && _lastAvailableHeight > 0)
+        {
+            ApplyLayoutModeForSize(_lastAvailableWidth, _lastAvailableHeight, previousLayout);
+        }
 
         if (changed && _weatherData is not null)
         {

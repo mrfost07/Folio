@@ -50,6 +50,15 @@ public sealed class RemoteSettingsWidgetActions : ISettingsWidgetActions
             SettingsIpcMethods.WidgetResetCapsuleOverrides,
             SettingsIpcPayload.Encode(reset, SettingsIpcJsonContext.Default.CapsuleOverrideReset));
 
+    public Task SetAllWidgetsCollapsedAsync(bool collapsed) =>
+        SendLayoutWrite(SettingsIpcMethods.WidgetSetAllCollapsed, SettingsIpcPayload.EncodeBoolean(collapsed));
+
+    public async Task<bool> RunPlacementTemplateActionAsync(string action)
+    {
+        var (ok, layout, _) = await _client.RequestAsync(SettingsIpcMethods.WidgetPlacementTemplate, action);
+        return ok && layout is not null && _settingsService.ApplyExternalLayout(layout);
+    }
+
     /// <summary>
     /// The appearance page's "清除每格背景" button (batch R8): the overrides
     /// live in the layout domain the main process owns, so the clear rides a

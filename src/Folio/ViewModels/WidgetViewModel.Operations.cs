@@ -181,7 +181,7 @@ public partial class WidgetViewModel
         return (displayablePaths, skippedCount);
     }
 
-    private async Task ApplyImportedTransferResultsAsync(
+    internal async Task ApplyImportedTransferResultsAsync(
         IEnumerable<FileService.FileTransferResult> results,
         bool shouldMove,
         string destinationFolderPath,
@@ -311,88 +311,6 @@ public partial class WidgetViewModel
                 OnPropertyChanged(nameof(SortModeLabel));
             }
         }
-    }
-
-    /// <summary>
-    /// Applies a previously created destination batch (for example shortcut
-    /// files) at the external-drop insertion point. The automatic sort mode is
-    /// committed only when at least one destination can be represented in the
-    /// widget; an ACL/provider race therefore cannot leave a phantom Manual
-    /// mode behind.
-    /// </summary>
-    internal async Task<int> ApplyManualInsertionAsync(
-        IEnumerable<string> destinationPaths,
-        int preferredManualIndex,
-        bool activateManualSortOnSuccess,
-        WidgetVisibleInsertionAnchor? preferredStackAnchor = null)
-    {
-        string[] paths = destinationPaths
-            .Where(path => !string.IsNullOrWhiteSpace(path))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        if (paths.Length == 0)
-        {
-            return 0;
-        }
-
-        WidgetSortMode? originalSortMode = null;
-        bool originalSortDescending = Config.SortDescending;
-        if (activateManualSortOnSuccess &&
-            Config.SortMode != WidgetSortMode.Manual)
-        {
-            originalSortMode = Config.SortMode;
-            Config.SortMode = WidgetSortMode.Manual;
-            Config.SortDescending = false;
-            NormalizeSortOrder();
-            OnPropertyChanged(nameof(SortModeLabel));
-        }
-
-        int insertedCount = 0;
-        var importedDestinationPaths = new List<string>();
-        int nextManualIndex = Math.Max(0, preferredManualIndex);
-        using (EnterItemMutationScope())
-        {
-            foreach (string path in paths)
-            {
-                if (!File.Exists(path) && !Directory.Exists(path))
-                {
-                    continue;
-                }
-
-                RecordFileAddedAt(path, DateTimeOffset.Now);
-                if (await UpsertFolderItemAsync(path, nextManualIndex))
-                {
-                    insertedCount++;
-                    nextManualIndex++;
-                    importedDestinationPaths.Add(path);
-                }
-            }
-        }
-
-        if (insertedCount > 0 &&
-            preferredStackAnchor is { } stackAnchor)
-        {
-            ApplyImportedStackInsertion(
-                importedDestinationPaths,
-                stackAnchor);
-        }
-
-        if (originalSortMode.HasValue)
-        {
-            if (insertedCount > 0)
-            {
-                PersistManualOrder();
-            }
-            else
-            {
-                Config.SortMode = originalSortMode.Value;
-                Config.SortDescending = originalSortDescending;
-                SortItems();
-                OnPropertyChanged(nameof(SortModeLabel));
-            }
-        }
-
-        return insertedCount;
     }
 
     internal async Task<IReadOnlyList<string>> GetConfirmedMissingPathsAsync(

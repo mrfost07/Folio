@@ -43,6 +43,7 @@ public sealed record SettingsPersistenceFailure(
     WriteIndented = true)]
 [JsonSerializable(typeof(AppSettings), TypeInfoPropertyName = "AppSettings")]
 [JsonSerializable(typeof(WidgetLayoutSettingsSlice))]
+[JsonSerializable(typeof(WidgetPlacementTemplate))]
 internal sealed partial class SettingsJsonContext : JsonSerializerContext
 {
 }
@@ -171,6 +172,7 @@ public sealed class SettingsService
     public const string WidgetCollapsedStyleSmart = "Smart";
     public const string WidgetCollapsedStylePill = "Pill";
     public const string WidgetCompactContentModeMinimal = CapsuleOptionKinds.ContentModeMinimal;
+    public const string WidgetCompactContentModeTitleOnly = CapsuleOptionKinds.ContentModeTitleOnly;
     public const string WidgetCompactContentModeSummary = CapsuleOptionKinds.ContentModeSummary;
     public const string WidgetCompactContentModeSmart = CapsuleOptionKinds.ContentModeSmart;
     public const int CurrentWidgetCompactSettingsVersion = 2;
@@ -225,6 +227,7 @@ public sealed class SettingsService
         });
     public const string ManagedDropActionMove = Contracts.ManagedDropActions.Move;
     public const string ManagedDropActionCopy = Contracts.ManagedDropActions.Copy;
+    public const string ManagedDropActionShortcut = Contracts.ManagedDropActions.Shortcut;
     public const string ManagedDropActionFollowWindows = Contracts.ManagedDropActions.FollowWindows;
     public const string ManagedDragOutActionMove = Contracts.ManagedDropActions.Move;
     public const string ManagedDragOutActionCopy = Contracts.ManagedDropActions.Copy;
@@ -323,6 +326,7 @@ public sealed class SettingsService
     public const string MusicDisplayModeControls = Contracts.MusicDisplayModes.Controls;
     public const string MusicDisplayModeRecordVertical = Contracts.MusicDisplayModes.RecordVertical;
     public const string MusicDisplayModeRecordHorizontal = Contracts.MusicDisplayModes.RecordHorizontal;
+    public const string MusicDisplayModeStudio = Contracts.MusicDisplayModes.Studio;
     public const int MaxRecentOrganizationHistoryCount = 24;
     public const string TodoNewTaskPositionTop = TodoOptionKinds.NewTaskPositionTop;
     public const string TodoNewTaskPositionBottom = TodoOptionKinds.NewTaskPositionBottom;
@@ -710,7 +714,7 @@ settings.WeatherRefreshIntervalMinutes = 60;
         settings.TodoShowThisMonthTab = false;
         settings.TodoShowImportantTab = true;
         settings.TodoShowCompletedTab = true;
-        settings.ManagedDropAction = ManagedDropActionMove;
+        settings.ManagedDropAction = ManagedDropActionShortcut;
         settings.ManagedDragOutAction = ManagedDragOutActionFollowWindows;
         settings.DragOutModifierTipEnabled = true;
         settings.DragOutResultHintEnabled = true;
@@ -2814,6 +2818,7 @@ settings.FocusClickedWidgetOnRaise = false;
             MusicDisplayModeControls => MusicDisplayModeControls,
             MusicDisplayModeRecordVertical => MusicDisplayModeRecordVertical,
             MusicDisplayModeRecordHorizontal => MusicDisplayModeRecordHorizontal,
+            MusicDisplayModeStudio => MusicDisplayModeStudio,
             _ => MusicDisplayModeAuto
         };
     }
@@ -3396,11 +3401,10 @@ settings.FocusClickedWidgetOnRaise = false;
             changed = true;
         }
 
-        if (!string.Equals(settings.ManagedDropAction, ManagedDropActionMove, StringComparison.Ordinal) &&
-            !string.Equals(settings.ManagedDropAction, ManagedDropActionCopy, StringComparison.Ordinal) &&
-            !string.Equals(settings.ManagedDropAction, ManagedDropActionFollowWindows, StringComparison.Ordinal))
+        string dropAction = Contracts.ManagedDropActions.Normalize(settings.ManagedDropAction);
+        if (!string.Equals(settings.ManagedDropAction, dropAction, StringComparison.Ordinal))
         {
-            settings.ManagedDropAction = ManagedDropActionMove;
+            settings.ManagedDropAction = dropAction;
             changed = true;
         }
 
@@ -4033,9 +4037,7 @@ settings.FocusClickedWidgetOnRaise = false;
             changed = true;
         }
 
-        string normalizedSkin = settings.WeatherSkin is WeatherSkinRich
-            ? WeatherSkinRich
-            : WeatherSkinStandard;
+        string normalizedSkin = WeatherOptionKinds.NormalizeSkin(settings.WeatherSkin);
         if (!string.Equals(settings.WeatherSkin, normalizedSkin, StringComparison.Ordinal))
         {
             settings.WeatherSkin = normalizedSkin;

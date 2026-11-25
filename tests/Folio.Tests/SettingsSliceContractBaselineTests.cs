@@ -159,7 +159,7 @@ public sealed class SettingsSliceContractBaselineTests
         Assert.Equal("Neutral", s.FileStackPopoverStyle);
         Assert.Empty(s.FileStackCustomRules);
         Assert.Equal("KeepLoose", s.FileStackUnmatchedBehavior);
-        Assert.Equal("Move", s.ManagedDropAction);
+        Assert.Equal("Shortcut", s.ManagedDropAction);
         Assert.Equal("FollowWindows", s.ManagedDragOutAction);
         Assert.True(s.DragOutModifierTipEnabled);
         Assert.True(s.DragOutResultHintEnabled);

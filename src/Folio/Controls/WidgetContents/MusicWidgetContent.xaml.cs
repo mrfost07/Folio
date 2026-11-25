@@ -508,6 +508,7 @@ public sealed partial class MusicWidgetContent : UserControl, IDisposable
         bool isRecordVertical = normalizedMode == SettingsService.MusicDisplayModeRecordVertical;
         bool isRecordHorizontal = normalizedMode == SettingsService.MusicDisplayModeRecordHorizontal;
         bool isRecord = isRecordVertical || isRecordHorizontal;
+        bool isStudio = normalizedMode == SettingsService.MusicDisplayModeStudio;
         bool useMinimalLayout = !isRecord && ShouldUseMinimalLayout(width, height, ViewModel?.DisplayMode);
         if ((_isMinimalLayout != useMinimalLayout) || (_isRecordLayout != isRecordVertical) || (_isRecordHorizontalLayout != isRecordHorizontal))
         {
@@ -579,11 +580,16 @@ public sealed partial class MusicWidgetContent : UserControl, IDisposable
         double controlsTopMargin = Math.Round(Lerp(2, 5, heightRatio));
 
         ContentGrid.Padding = new Thickness(contentPadding);
-        ContentGrid.ColumnSpacing = columnSpacing;
+        ContentGrid.ColumnSpacing = isStudio ? 0 : columnSpacing;
         ContentGrid.RowSpacing = rowSpacing;
-        AlbumColumn.Width = new GridLength(albumSize);
-        TopRow.Height = new GridLength(albumSize);
-        SetAlbumArtSize(albumSize);
+        AlbumColumn.Width = new GridLength(isStudio ? 0 : albumSize);
+        TopRow.Height = isStudio ? GridLength.Auto : new GridLength(albumSize);
+        AlbumArtShadow.Opacity = isStudio ? 0 : 0.12;
+        AlbumArtSurface.Visibility = isStudio ? Visibility.Collapsed : Visibility.Visible;
+        if (!isStudio)
+        {
+            SetAlbumArtSize(albumSize);
+        }
         ProgressRow.Margin = new Thickness(0, progressTopMargin, 0, 0);
         ProgressRow.ColumnSpacing = Math.Round(Lerp(5, 8, widthRatio));
         PositionColumn.Width = new GridLength(timelineColumnWidth);
@@ -611,6 +617,7 @@ public sealed partial class MusicWidgetContent : UserControl, IDisposable
         {
             SettingsService.MusicDisplayModeCover => true,
             SettingsService.MusicDisplayModeControls => false,
+            SettingsService.MusicDisplayModeStudio => width < MinimumResponsiveWidth || height < 135,
             _ => ShouldUseMinimalLayout(width, height)
         };
     }

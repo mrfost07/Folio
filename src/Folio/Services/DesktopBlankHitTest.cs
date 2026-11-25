@@ -135,18 +135,36 @@ internal static partial class DesktopBlankHitTest
 
     private static bool IsBlankListViewPoint(
         IntPtr listView,
+        Win32Helper.POINT screenPoint) => GetListViewItemIndex(listView, screenPoint) is < 0;
+
+    internal static IntPtr FindDesktopIconListAtPoint(Win32Helper.POINT point)
+    {
+        IntPtr list = Win32Helper.WindowFromPoint(point);
+        if (list == IntPtr.Zero || GetWindowClass(list) != "SysListView32" ||
+            GetWindowClass(Win32Helper.GetParent(list)) != "SHELLDLL_DefView")
+        {
+            return IntPtr.Zero;
+        }
+
+        IntPtr root = Win32Helper.GetAncestor(list, Win32Helper.GA_ROOT);
+        return (GetWindowClass(root) is "Progman" or "WorkerW") &&
+            IsShellDesktopListView(list) && IsDesktopHostWindow(root) ? list : IntPtr.Zero;
+    }
+
+    internal static int? GetListViewItemIndex(
+        IntPtr listView,
         Win32Helper.POINT screenPoint)
     {
         Win32Helper.POINT clientPoint = screenPoint;
         if (!Win32Helper.ScreenToClient(listView, ref clientPoint))
         {
-            return false;
+            return null;
         }
 
         Win32Helper.GetWindowThreadProcessId(listView, out uint processId);
         if (processId == 0)
         {
-            return false;
+            return null;
         }
 
         IntPtr process = RemoteProcessMemoryNativeMethods.OpenProcess(
@@ -155,7 +173,7 @@ internal static partial class DesktopBlankHitTest
             processId);
         if (process == IntPtr.Zero)
         {
-            return false;
+            return null;
         }
 
         int structureSize = Marshal.SizeOf<ListViewHitTestInfo>();
@@ -187,7 +205,7 @@ internal static partial class DesktopBlankHitTest
                     (UIntPtr)structureSize,
                     out _))
             {
-                return false;
+                return null;
             }
 
             IntPtr delivered = Win32Helper.SendMessageTimeout(
@@ -206,11 +224,11 @@ internal static partial class DesktopBlankHitTest
                     (UIntPtr)structureSize,
                     out _))
             {
-                return false;
+                return null;
             }
 
             hitTest = Marshal.PtrToStructure<ListViewHitTestInfo>(localBuffer);
-            return hitTest.ItemIndex < 0;
+            return hitTest.ItemIndex;
         }
         finally
         {

@@ -32,7 +32,8 @@ internal static class NativeDropEffectPolicy
         bool hasShellApplicationData = false,
         bool defaultMove = true,
         bool followWindows = false,
-        bool sameVolume = true)
+        bool sameVolume = true,
+        bool defaultShortcut = false)
     {
         if (hasShellApplicationData)
         {
@@ -66,14 +67,14 @@ internal static class NativeDropEffectPolicy
             // The native source may omit DROPEFFECT_LINK even though DeskBox
             // can safely create a local .lnk from the extracted path. The
             // visual still falls back to Copy when Link is not advertised.
-            canLink: true);
+            canLink: true,
+            defaultShortcut: defaultShortcut);
         return intent switch
         {
             FileDropIntent.Copy => Copy,
             FileDropIntent.Move => Move,
             FileDropIntent.Shortcut when (allowedEffects & Link) != 0 => Link,
             FileDropIntent.Shortcut when (allowedEffects & Copy) != 0 => Copy,
-            FileDropIntent.Shortcut when (allowedEffects & Move) != 0 => Move,
             _ => None
         };
     }
@@ -103,12 +104,15 @@ internal static class NativeDropEffectPolicy
 
     public static bool ShouldCreateMappedShortcut(
         bool containsTemporaryFiles,
-        uint keyState)
+        uint keyState,
+        bool defaultShortcut = false)
     {
         return !containsTemporaryFiles &&
                ((keyState & AltKeyState) != 0 ||
                 (keyState & (ControlKeyState | ShiftKeyState)) ==
-                    (ControlKeyState | ShiftKeyState));
+                    (ControlKeyState | ShiftKeyState) ||
+                (defaultShortcut &&
+                 (keyState & (ControlKeyState | ShiftKeyState)) == 0));
     }
 
     public static bool IsRightButtonDrag(uint keyState)

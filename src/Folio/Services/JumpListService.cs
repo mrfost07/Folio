@@ -15,6 +15,7 @@ public static class JumpListService
     private const string ArgNewFolderWidget = "--new-folder-widget";
     private const string ArgOpenSettings = "--open-settings";
     private const string ArgOpenStorage = "--open-storage";
+    private const string ArgToggleGroupedOriginals = "--toggle-grouped-originals";
 
     /// <summary>
     /// Register the App User Model ID so Windows associates the process
@@ -109,7 +110,7 @@ public static class JumpListService
         {
             string trimmed = part.Trim().Trim('"');
             if (trimmed is ArgToggleWidgets or ArgNewFolderWidget
-                or ArgOpenSettings or ArgOpenStorage)
+                or ArgOpenSettings or ArgOpenStorage or ArgToggleGroupedOriginals)
             {
                 return trimmed;
             }
@@ -165,6 +166,10 @@ public static class JumpListService
 
                 case ArgOpenSettings:
                     app.ShowSettings();
+                    break;
+
+                case ArgToggleGroupedOriginals:
+                    await app.ToggleDesktopOriginalsAsync();
                     break;
 
                 case ArgOpenStorage:

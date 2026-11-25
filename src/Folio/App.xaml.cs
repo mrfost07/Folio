@@ -363,10 +363,12 @@ public partial class App : Application
         }
         NativeAppNotificationActivation? nativeNotificationActivation =
             TryGetCurrentNativeNotificationActivation();
+        _isDesktopGroupingLaunch = !notificationLaunch && !_processStartupLaunchDetected &&
+            QueueDesktopGroupingActivation();
         if (!createdNew)
         {
             string? jumpListArg = nativeNotificationActivation is null &&
-                !_processStartupLaunchDetected
+                !_processStartupLaunchDetected && !_isDesktopGroupingLaunch
                     ? JumpListService.TryGetJumpListArgument(
                         string.Join(' ', Environment.GetCommandLineArgs()))
                     : null;
@@ -374,7 +376,9 @@ public partial class App : Application
                 ? "notification"
                 : _processStartupLaunchDetected
                     ? "startup"
-                    : jumpListArg is not null
+                    : _isDesktopGroupingLaunch
+                        ? "desktop-grouping"
+                        : jumpListArg is not null
                         ? $"jump-list:{jumpListArg}"
                         : "bare";
             Log(
@@ -1580,6 +1584,8 @@ public partial class App : Application
             // Settings-host IPC server: must exist before any second-process
             // settings host tries to connect (batch 3c).
             RunOptionalStartupStep("settings-ipc-server", StartSettingsIpcServer);
+            RunOptionalStartupStep("desktop-grouping-gesture", StartDesktopGroupingGesture);
+            await RunOptionalStartupStepAsync("desktop-grouped-originals", LoadDesktopOriginalsAsync);
 
             RunOptionalStartupStep("todo-reminders", () => RefreshTodoReminderService());
             RunOptionalStartupStep("native-notifications", StartNativeNotificationService);
@@ -1816,7 +1822,7 @@ public partial class App : Application
                 "jump-list-configure");
 
             // Handle Jump List activation on first launch (not second instance)
-            string? firstLaunchJumpArg =
+            string? firstLaunchJumpArg = _isDesktopGroupingLaunch ? null :
                 JumpListService.TryGetJumpListArgument(args.Arguments) ??
                 JumpListService.TryGetJumpListArgument(
                     string.Join(' ', Environment.GetCommandLineArgs()));
@@ -3765,23 +3771,11 @@ public partial class App : Application
 
         try
         {
-            if (startupSignalPending)
-            {
-                await HandleExternalActivationAsync();
-            }
-            else
-            {
-                DrainPendingNativeNotificationActivations();
-                // Deep review R15 (F1 audit): a secondary instance writes the
-                // pending jump-list/update-result file and then sets the
-                // event; if the primary died in that window the signal died
-                // with it and the stale file survived. Without consuming it
-                // here, the next bare activation hours later replayed the
-                // stale argument (an unexpected toggle/open-storage).
-                // Running the same handler drains those files harmlessly —
-                // no event means no envelope work, just the file take.
-                await HandleExternalActivationAsync();
-            }
+            // A forwarded request can survive the primary process that owned
+            // its signal. Drain those requests on every launch, but opening
+            // Settings at sign-in requires a real secondary activation.
+            await HandleExternalActivationAsync(
+                allowBareActivation: !IsStartupMode || startupSignalPending);
         }
         finally
         {
@@ -3789,7 +3783,7 @@ public partial class App : Application
         }
     }
 
-    private async Task HandleExternalActivationAsync()
+    private async Task HandleExternalActivationAsync(bool allowBareActivation = true)
     {
         // An activation racing shutdown would re-show windows the teardown
         // sequence just closed (it runs after the settings-window step has
@@ -3819,10 +3813,12 @@ public partial class App : Application
         {
             do
             {
+                bool handleBareActivation = allowBareActivation || _externalActivationRequestedWhileBusy;
                 _externalActivationRequestedWhileBusy = false;
                 ScheduleExternalStateRecovery();
 
                 bool activationHandled = DrainPendingNativeNotificationActivations();
+                activationHandled |= await HandleDesktopGroupingActivationsAsync();
                 string? jumpListArgument = TakePendingJumpListArgument();
                 if (!string.IsNullOrWhiteSpace(jumpListArgument))
                 {
@@ -3845,7 +3841,7 @@ public partial class App : Application
                     activationHandled = true;
                 }
 
-                if (activationHandled)
+                if (activationHandled || !handleBareActivation)
                 {
                     continue;
                 }
@@ -6760,6 +6756,8 @@ public partial class App : Application
                 }
             }),
             ShutdownStep.Sync("desktop-activation", () => { DesktopDoubleClickActivationService?.Dispose(); DesktopDoubleClickActivationService = null; }),
+            ShutdownStep.Sync("desktop-grouping-gesture", () => { _desktopGroupingGesture?.Dispose(); _desktopGroupingGesture = null; }),
+            ShutdownStep.Bounded("desktop-grouped-originals", CloseDesktopOriginalsAsync, shutdownGrace),
             ShutdownStep.Bounded("todo-reminders", () =>
                 _featureRuntimes?.DisposeAsync(TodoRemindersFeatureRuntimeId) ?? Task.CompletedTask,
                 shutdownGrace, abortFollowingStepsOnTimeout: true),

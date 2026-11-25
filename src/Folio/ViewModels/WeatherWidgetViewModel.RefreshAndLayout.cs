@@ -353,7 +353,9 @@ public sealed partial class WeatherWidgetViewModel
         double height,
         WeatherLayoutPresentationState previousState)
     {
-        string newLayout = DetermineLayoutMode(
+        double scaleDelta = EffectiveTypographyScale - 1;
+        string newLayout = IsForecastFirst && width >= 300 + 110 * scaleDelta &&
+            height >= 174 + 120 * scaleDelta ? "Expanded" : DetermineLayoutMode(
             width,
             height,
             _layoutMode,

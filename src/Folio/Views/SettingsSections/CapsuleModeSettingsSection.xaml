@@ -37,6 +37,84 @@
     <StackPanel Style="{StaticResource SectionPanelStyle}">
         <TextBlock Style="{StaticResource SectionTitleTextStyle}" AutomationProperties.HeadingLevel="Level1" svc:Localized.Key="Settings.Section.CapsuleMode" />
         <StackPanel Margin="0,8,0,0" Spacing="4">
+            <toolkit:SettingsExpander
+                IsExpanded="True"
+                svc:Localized.HeaderKey="Settings.Capsule.PlacementTemplates"
+                svc:Localized.DescriptionKey="Settings.Capsule.PlacementTemplates.Description">
+                <toolkit:SettingsExpander.Items>
+                    <toolkit:SettingsCard ContentAlignment="Vertical" HorizontalContentAlignment="Stretch">
+                        <StackPanel Spacing="8">
+                            <GridView x:Name="PlacementTemplatePicker"
+                                SelectionMode="Single"
+                                SelectionChanged="PlacementTemplatePicker_SelectionChanged"
+                                SizeChanged="PlacementTemplatePicker_SizeChanged"
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                ScrollViewer.HorizontalScrollMode="Disabled"
+                                svc:Localized.AutomationNameKey="Settings.Capsule.PlacementTemplates.Choose">
+                                <GridView.Resources>
+                                    <ResourceDictionary>
+                                        <ResourceDictionary.ThemeDictionaries>
+                                            <ResourceDictionary x:Key="Default">
+                                                <CornerRadius x:Key="GridViewItemCornerRadius">8</CornerRadius>
+                                                <SolidColorBrush x:Key="GridViewItemSelectedBorderBrush" Color="#FF3B9DEB" />
+                                                <SolidColorBrush x:Key="GridViewItemSelectedPointerOverBorderBrush" Color="#FF63B4F2" />
+                                                <SolidColorBrush x:Key="GridViewItemSelectedPressedBorderBrush" Color="#FF3B9DEB" />
+                                                <SolidColorBrush x:Key="GridViewItemCheckBoxSelectedBrush" Color="#FF0078D4" />
+                                                <SolidColorBrush x:Key="GridViewItemCheckBoxSelectedPointerOverBrush" Color="#FF0067B8" />
+                                                <SolidColorBrush x:Key="GridViewItemCheckBoxSelectedPressedBrush" Color="#FF0067B8" />
+                                                <SolidColorBrush x:Key="GridViewItemBackgroundSelected" Color="#2078B9F9" />
+                                                <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPointerOver" Color="#3078B9F9" />
+                                            </ResourceDictionary>
+                                        </ResourceDictionary.ThemeDictionaries>
+                                    </ResourceDictionary>
+                                </GridView.Resources>
+                                <GridView.ItemContainerStyle>
+                                    <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                                        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                                        <Setter Property="Margin" Value="0,0,8,8" />
+                                        <Setter Property="Padding" Value="10" />
+                                    </Style>
+                                </GridView.ItemContainerStyle>
+                                <GridView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="3" />
+                                    </ItemsPanelTemplate>
+                                </GridView.ItemsPanel>
+                            </GridView>
+                            <toolkit:WrapPanel Margin="0,0,8,0" HorizontalAlignment="Right"
+                                HorizontalSpacing="8" VerticalSpacing="8">
+                                <Button x:Name="SavePlacementTemplateButton" Tag="save" Click="PlacementTemplate_Click"
+                                    svc:Localized.ToolTipKey="Settings.Capsule.PlacementTemplates.PersonalDescription"
+                                    svc:Localized.Key="Settings.Capsule.PlacementTemplates.Save" />
+                                <Button x:Name="ApplyPlacementTemplateButton" Click="PlacementTemplate_Click"
+                                    FontWeight="SemiBold"
+                                    svc:Localized.Key="Settings.Capsule.PlacementTemplates.Apply" />
+                            </toolkit:WrapPanel>
+                            <TextBlock x:Name="PlacementTemplateStatus" TextWrapping="Wrap"
+                                Visibility="Collapsed" AutomationProperties.LiveSetting="Polite" />
+                        </StackPanel>
+                    </toolkit:SettingsCard>
+                </toolkit:SettingsExpander.Items>
+            </toolkit:SettingsExpander>
+            <toolkit:SettingsCard
+                HorizontalContentAlignment="Right"
+                svc:Localized.HeaderKey="Settings.CompactContent.AllWidgets">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE8A7;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Click="CollapseAll_Click">
+                        <TextBlock svc:Localized.Key="Settings.CompactContent.CollapseAll" />
+                    </Button>
+                    <Button Click="ExpandAll_Click">
+                        <TextBlock svc:Localized.Key="Settings.CompactContent.ExpandAll" />
+                    </Button>
+                </StackPanel>
+            </toolkit:SettingsCard>
                 <toolkit:SettingsCard
                     HorizontalContentAlignment="Right"
                     svc:Localized.DescriptionKey="Settings.CollapseBehavior.Description"

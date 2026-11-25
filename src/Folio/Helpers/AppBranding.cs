@@ -6,7 +6,6 @@ namespace Folio.Helpers;
 public static class AppBranding
 {
     private const string LogoIconFileName = "folio.ico";
-    private const string LogoSvgUriString = "ms-appx:///Assets/folio.svg";
     private const string TrayIconLightFileName = "folio-tray-light.ico";
     private const string TrayIconDarkFileName = "folio-tray-dark.ico";
 
@@ -14,15 +13,13 @@ public static class AppBranding
     public static string TrayIconLightPath => Path.Combine(AppContext.BaseDirectory, "Assets", TrayIconLightFileName);
     public static string TrayIconDarkPath => Path.Combine(AppContext.BaseDirectory, "Assets", TrayIconDarkFileName);
 
-    public static Uri LogoSvgUri { get; } = new(LogoSvgUriString);
-
     public static Icon? CreateTrayIcon(string style, bool isDarkTheme)
     {
         string trayIconPath = style switch
         {
             "Colorful" => LogoIconPath,
-            "Black" => TrayIconDarkPath,
-            "White" => TrayIconLightPath,
+            "Black" => TrayIconLightPath,
+            "White" => TrayIconDarkPath,
             _ => isDarkTheme ? TrayIconDarkPath : TrayIconLightPath
         };
 

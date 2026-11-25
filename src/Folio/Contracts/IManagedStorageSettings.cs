@@ -9,9 +9,18 @@
 /// </summary>
 public static class ManagedDropActions
 {
+    public const string Shortcut = "Shortcut";
     public const string Copy = "Copy";
     public const string Move = "Move";
     public const string FollowWindows = "FollowWindows";
+
+    internal static string Normalize(string? action) => action switch
+    {
+        Copy => Copy,
+        Move => Move,
+        FollowWindows => FollowWindows,
+        _ => Shortcut
+    };
 }
 
 /// <summary>

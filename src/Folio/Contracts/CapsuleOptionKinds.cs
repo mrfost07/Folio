@@ -65,6 +65,7 @@ public static class CapsuleOptionKinds
 
     // --- Compact content mode ---
     public const string ContentModeMinimal = "Minimal";
+    public const string ContentModeTitleOnly = "TitleOnly";
     public const string ContentModeSummary = "Summary";
     public const string ContentModeSmart = "Smart";
 
@@ -141,6 +142,11 @@ public static class CapsuleOptionKinds
 
     public static string NormalizeContentMode(string? value)
     {
+        if (string.Equals(value, ContentModeTitleOnly, StringComparison.OrdinalIgnoreCase))
+        {
+            return ContentModeTitleOnly;
+        }
+
         if (string.Equals(value, ContentModeMinimal, StringComparison.OrdinalIgnoreCase))
         {
             return ContentModeMinimal;

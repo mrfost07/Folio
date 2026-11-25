@@ -1663,6 +1663,7 @@ public static partial class Win32Helper
     }
 
     private const int ShcneRenameItem = 0x00000001;
+    private const int ShcneAttributes = 0x00000800;
     private const int ShcneUpdateDir = 0x00001000;
     private const uint ShcnfPathW = 0x0005;
 
@@ -1691,6 +1692,9 @@ public static partial class Win32Helper
                 ex.Message);
         }
     }
+
+    internal static void NotifyShellAttributesChanged(string path) =>
+        SHChangeNotify(ShcneAttributes, ShcnfPathW, path, null);
 
     /// <summary>
     /// Asks shell folder views (including OneDrive-backed desktops) to

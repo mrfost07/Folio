@@ -80,9 +80,7 @@ internal static class WeatherSettingsPolicy
     internal static void SetSkin(AppSettings settings, string value)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        settings.WeatherSkin = value == SettingsService.WeatherSkinRich
-            ? SettingsService.WeatherSkinRich
-            : SettingsService.WeatherSkinStandard;
+        settings.WeatherSkin = WeatherOptionKinds.NormalizeSkin(value);
     }
 
     internal static void SetIconStyle(AppSettings settings, string value)

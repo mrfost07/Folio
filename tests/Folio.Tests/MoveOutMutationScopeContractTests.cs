@@ -49,12 +49,9 @@ public sealed class MoveOutMutationScopeContractTests
     }
 
     [Fact]
-    public void MoveOut_IsTheThirdScopeConsumer_BesidesTheTwoImportLoops()
+    public void MoveOut_UsesItsOwnScopeAlongsideTheSharedImportLoop()
     {
-        // The import loops (transfer results + manual insertion) and the
-        // move-out handler are the three bulk mutation entry points; a fourth
-        // caller means new derived-work bypass risk and deserves its own
-        // review.
+        // Import results and move-out each own one batch scope.
         string operations = File.ReadAllText(TestPaths.FromRepository(
             "src/Folio/ViewModels/WidgetViewModel.Operations.cs"));
 
@@ -69,6 +66,6 @@ public sealed class MoveOutMutationScopeContractTests
             index += "EnterItemMutationScope()".Length;
         }
 
-        Assert.Equal(3, count);
+        Assert.Equal(2, count);
     }
 }

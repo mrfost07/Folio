@@ -142,6 +142,12 @@ public sealed partial class ContentWidgetWindow : WidgetWindowBase, IDesktopWidg
     {
         var localization = App.Current.LocalizationService;
         string contentMode = ResolveEffectiveCompactContentMode();
+        if (contentMode == SettingsService.WidgetCompactContentModeTitleOnly)
+        {
+            return new WidgetCompactPresentation(_titleViewModel.DisplayName,
+                string.Empty, string.Empty, localization.T("Widget.Compact.DropHint"), TitleOnly: true);
+        }
+
         return CurrentContent switch
         {
             FileWidgetContentAdapter file =>

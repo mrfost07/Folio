@@ -41,6 +41,8 @@ public sealed class SettingsIpcServer : IAsyncDisposable
         SettingsIpcMethods.WidgetApplyGroupNavDefaults,
         SettingsIpcMethods.WidgetApplyLayoutPreferences,
         SettingsIpcMethods.WidgetResetCapsuleOverrides,
+        SettingsIpcMethods.WidgetSetAllCollapsed,
+        SettingsIpcMethods.WidgetPlacementTemplate,
         SettingsIpcMethods.AppearanceClearPerWidgetBackgrounds,
         SettingsIpcMethods.WidgetSyncFeatureEnabled,
         // Deep review R13-2 (D10 audit): the hotkey enable toggles are

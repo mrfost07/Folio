@@ -60,4 +60,5 @@ public sealed record WidgetCompactPresentation(
     // and compact transition animations remain on independent layers.
     double FullBleedBackgroundOpacity = 1.0,
     // Bundled vector icon shown in place of the default glyph (weather).
-    ImageSource? IconImage = null);
+    ImageSource? IconImage = null,
+    bool TitleOnly = false);

@@ -177,19 +177,21 @@ public sealed class SettingsAccordionAndOrderingContractTests
         Assert.Contains("CapsuleOverridesSettingsSectionTemplate", xaml, StringComparison.Ordinal);
     }
 
-    // Spec C5: the merged capsule main page has exactly three expanders, with
-    // the hover-response expander hosting the expand/collapse delay sub-cards
-    // and the arrangement/animation detail cards folded in as well.
     [Fact]
-    public void CapsuleModeSection_HasThreeExpandersWithMergedChildren()
+    public void CapsuleModeSection_HasPlacementTemplatesAndMergedChildren()
     {
         string xaml = ReadRepositoryFile(
             "src/Folio/Views/SettingsSections/CapsuleModeSettingsSection.xaml");
 
         int expanderCount = CountOpeningTags(xaml, "toolkit:SettingsExpander");
-        Assert.True(expanderCount == 3,
-            $"CapsuleModeSettingsSection.xaml: expected exactly 3 SettingsExpander elements " +
-            $"(hover response, arrangement, animation), found {expanderCount}.");
+        Assert.True(expanderCount == 4,
+            $"CapsuleModeSettingsSection.xaml: expected placement, hover, arrangement and animation expanders, found {expanderCount}.");
+        Assert.NotNull(FindOpeningTag(
+            xaml, "toolkit:SettingsExpander", "HeaderKey=\"Settings.Capsule.PlacementTemplates\""));
+        string placement = Slice(xaml, "HeaderKey=\"Settings.Capsule.PlacementTemplates\"", "</toolkit:SettingsExpander>");
+        // The toolkit applies a SettingsCard style to every expander item.
+        Assert.Matches(@"<toolkit:SettingsExpander.Items>\s*<toolkit:SettingsCard\b", placement);
+        Assert.Contains("<GridView x:Name=\"PlacementTemplatePicker\"", placement, StringComparison.Ordinal);
 
         Match? hover = FindOpeningTag(
             xaml, "toolkit:SettingsExpander", "HeaderKey=\"Settings.Capsule.HoverResponse.Title\"");

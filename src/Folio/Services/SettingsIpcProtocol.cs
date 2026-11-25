@@ -253,6 +253,8 @@ public static class SettingsIpcMethods
     public const string WidgetApplyGroupNavDefaults = "widget.apply-group-nav-defaults";
     public const string WidgetApplyLayoutPreferences = "widget.apply-layout-preferences";
     public const string WidgetResetCapsuleOverrides = "widget.reset-capsule-overrides";
+    public const string WidgetSetAllCollapsed = "widget.set-all-collapsed";
+    public const string WidgetPlacementTemplate = "widget.placement-template";
 
     /// <summary>
     /// Clears every per-widget background override in the authoritative

@@ -382,6 +382,21 @@ public sealed class SettingsIpcMethodRouter
                 await _widget.ClearPerWidgetBackgrounds();
                 return (true, SerializeLayout(_settings), null);
 
+            case SettingsIpcMethods.WidgetSetAllCollapsed:
+                if (_widget is null) return unavailable(method);
+                if (payload is not ("true" or "false"))
+                {
+                    return (false, null, "missing compact state");
+                }
+                await _widget.SetAllWidgetsCollapsedAsync(SettingsIpcPayload.DecodeBoolean(payload));
+                return (true, SerializeLayout(_settings), null);
+
+            case SettingsIpcMethods.WidgetPlacementTemplate:
+                if (_widget is null) return unavailable(method);
+                return payload is not null && await _widget.RunPlacementTemplateActionAsync(payload)
+                    ? (true, SerializeLayout(_settings), null)
+                    : (false, null, "Placement template unavailable");
+
             case SettingsIpcMethods.SettingsSnapshot:
                 if (_settings is null) return unavailable(method);
                 return (true, _settings.SerializeCurrentSettings(), null);

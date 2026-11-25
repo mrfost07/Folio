@@ -90,7 +90,7 @@ public sealed class FileWidgetSettingsSlice
     /// How files should be handled when dropped into a managed storage widget.
     /// Valid values: <c>"Move"</c>, <c>"Copy"</c>, <c>"FollowWindows"</c>.
     /// </summary>
-    public string ManagedDropAction { get; set; } = "Move";
+    public string ManagedDropAction { get; set; } = Folio.Contracts.ManagedDropActions.Shortcut;
 
     /// <summary>
     /// The preferred drop effect advertised to external targets when files are

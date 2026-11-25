@@ -119,14 +119,16 @@ public sealed class MusicSettingsEditorPilotTests : IDisposable
         (_, MusicSettingsViewModel editor) = CreateEditor(_root);
 
         SettingsOption[] options = [.. editor.AvailableDisplayModeOptions];
-        Assert.Equal(5, options.Length);
+        Assert.Equal(6, options.Length);
         Assert.Equal(MusicDisplayModes.Auto, options[0].Value);
         Assert.Equal(MusicDisplayModes.Cover, options[1].Value);
         Assert.Equal(MusicDisplayModes.Controls, options[2].Value);
         Assert.Equal(MusicDisplayModes.RecordVertical, options[3].Value);
         Assert.Equal(MusicDisplayModes.RecordHorizontal, options[4].Value);
+        Assert.Equal(MusicDisplayModes.Studio, options[5].Value);
         Assert.Equal("Settings.Music.DisplayMode.Auto", options[0].DisplayName);
         Assert.Equal("Settings.Music.DisplayMode.RecordHorizontal", options[4].DisplayName);
+        Assert.Equal("Settings.Music.DisplayMode.Studio", options[5].DisplayName);
     }
 
     [Fact]

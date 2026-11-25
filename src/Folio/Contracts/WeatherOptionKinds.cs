@@ -26,6 +26,7 @@ public static class WeatherOptionKinds
 
     public const string SkinStandard = "Standard";
     public const string SkinRich = "Rich";
+    public const string SkinForecast = "Forecast";
 
     public const string IconStyleFolio = "Folio";
     public const string IconStyleDeskBox = "Folio";
@@ -86,7 +87,7 @@ public static class WeatherOptionKinds
         view == DefaultViewWeek ? DefaultViewWeek : DefaultViewToday;
 
     public static string NormalizeSkin(string? skin) =>
-        skin == SkinRich ? SkinRich : SkinStandard;
+        skin is SkinRich or SkinForecast ? skin : SkinStandard;
 
     public static string NormalizeIconStyle(string? style) => style is
         IconStyleFolio or IconStyleDeskBox or "DeskBox" or IconStyleFlat or IconStyleLine or IconStyleFluent

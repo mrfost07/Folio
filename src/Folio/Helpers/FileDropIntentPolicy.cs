@@ -28,8 +28,15 @@ internal static class FileDropIntentPolicy
         bool altDown = false,
         bool followWindows = false,
         bool sameVolume = true,
-        bool canLink = true)
+        bool canLink = true,
+        bool defaultShortcut = false)
     {
+        if (!forceCopy && !controlDown && !shiftDown && !altDown &&
+            defaultShortcut && canLink)
+        {
+            return FileDropIntent.Shortcut;
+        }
+
         if (!hasMappedFolder)
         {
             // The widget has no managed folder yet, but the import creates

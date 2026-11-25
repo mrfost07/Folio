@@ -9,15 +9,14 @@ namespace Folio.Views;
 /// The left stage is one persistent illustration canvas. Each step owns a
 /// single hero element (logo mark / drop box / keycap / tray / feature tiles)
 /// that swaps via a soft crossfade + settle — no lateral page motion. Per-step
-/// loops (mark assembly, file flight, keycap press, tray ping, tile float)
+/// loops (logo pulse, file flight, keycap press, tray ping, tile float)
 /// are fully stopped when leaving the step.
 /// </summary>
 public sealed partial class OnboardingWindow
 {
     private const int SceneTransitionMs = 380;
 
-    /// <summary>One full coincide → fan → permute → merge → snap cycle.</summary>
-    private const int MarkAssemblyLoopMs = 7200;
+    private static readonly TimeSpan LogoPulseDuration = TimeSpan.FromSeconds(6);
 
     /// <summary>One full scatter → inhale → tidy row → reveal → breathe cycle.</summary>
     private const int DropSceneLoopMs = 7200;
@@ -132,7 +131,7 @@ public sealed partial class OnboardingWindow
         switch (step)
         {
             case 0:
-                StartMarkAssemblyLoop();
+                StartLogoPulse();
                 break;
             case 1:
                 StartFileFlightLoop();
@@ -154,10 +153,7 @@ public sealed partial class OnboardingWindow
         _sceneLoopGeneration++;
         StopLoopAnimation(SceneHalo);
         StopLoopAnimation(SceneMark);
-        StopLoopAnimation(SceneMarkGroup);
-        StopLoopAnimation(SceneMarkSlab0);
-        StopLoopAnimation(SceneMarkSlab1);
-        StopLoopAnimation(SceneMarkSlab2);
+        StopLoopAnimation(SceneLogo);
         StopLoopAnimation(SceneDropHero);
         StopLoopAnimation(SceneDropBox);
         StopLoopAnimation(SceneDropBoxArt);
@@ -189,238 +185,42 @@ public sealed partial class OnboardingWindow
         visual.StopAnimation("Opacity");
     }
 
-    // ── Step 1: the mark assembles — the three slabs coincide face-on as one
-    // tile, fan apart along the logo diagonal, permute cyclically (each beat
-    // moves every slab one slot; the front slab hops over the top, scaled
-    // down and dimmed to read as passing behind), then merge back into the
-    // stacked logo, breathe, and snap shut into the next cycle ──
-
-    private void StartMarkAssemblyLoop()
+    private void StartLogoPulse()
     {
-        var duration = TimeSpan.FromMilliseconds(MarkAssemblyLoopMs);
-        var compositor = GetVisual(SceneHalo).Compositor;
-        var easeOut = EaseOut();
-        var easeIn = compositor.CreateCubicBezierEasingFunction(
-            new Vector2(0.7f, 0f), new Vector2(0.84f, 0f));
-        var easeInOut = compositor.CreateCubicBezierEasingFunction(
-            new Vector2(0.65f, 0f), new Vector2(0.35f, 1f));
-        var arcEase = compositor.CreateCubicBezierEasingFunction(
-            new Vector2(0.45f, 0f), new Vector2(0.25f, 1f));
-
-        // Waypoints are the approved 240px-stage preview scaled to the 128px
-        // mark. pitch = one (4,3)-viewBox-unit slab step so all slabs coincide
-        // on the middle footprint; back/middle/front are the exploded slots
-        // straddling the resting logo along its diagonal; arc is the hop over
-        // the top. Fixed z-order by design — the "behind" pass is faked with
-        // scale + dim because Composition cannot animate Canvas.ZIndex.
-        var pitch = new Vector2(21.3f, 16f);
-        var back = new Vector2(-20.3f, -14.9f);
-        var middle = new Vector2(2.1f, -2.1f);
-        var front = new Vector2(22.4f, 17.1f);
-        var arc = new Vector2(1.1f, -34.1f);
-
-        // Back slab: coincides, fans out first, hops over the top on beat 3.
-        StartMarkSlabLoop(SceneMarkSlab0, duration,
-        [
-            new(0.00f, pitch),
-            new(0.12f, pitch, Easing: easeOut),
-            new(0.26f, back, 1.02f),
-            new(0.36f, back),
-            new(0.46f, middle, Easing: easeInOut),
-            new(0.56f, front, Easing: easeInOut),
-            new(0.60f, arc, 0.94f, 0.85f, arcEase),
-            new(0.64f, back, Easing: arcEase),
-            new(0.68f, back),
-            new(0.78f, Vector2.Zero, Easing: easeOut),
-            new(0.92f, Vector2.Zero),
-            new(1.00f, pitch, 0.99f, Easing: easeIn),
-        ]);
-
-        // Middle slab: hops over the top on beat 2.
-        StartMarkSlabLoop(SceneMarkSlab1, duration,
-        [
-            new(0.00f, Vector2.Zero),
-            new(0.14f, Vector2.Zero, Easing: easeOut),
-            new(0.28f, middle, 1.02f),
-            new(0.36f, middle),
-            new(0.46f, front, Easing: easeInOut),
-            new(0.51f, arc, 0.94f, 0.85f, arcEase),
-            new(0.56f, back, Easing: arcEase),
-            new(0.64f, middle, Easing: easeInOut),
-            new(0.70f, middle),
-            new(0.80f, Vector2.Zero, Easing: easeOut),
-            new(0.92f, Vector2.Zero),
-            new(1.00f, Vector2.Zero),
-        ]);
-
-        // Front slab: hops over the top on beat 1.
-        StartMarkSlabLoop(SceneMarkSlab2, duration,
-        [
-            new(0.00f, -pitch),
-            new(0.16f, -pitch, Easing: easeOut),
-            new(0.30f, front, 1.02f),
-            new(0.36f, front),
-            new(0.41f, arc, 0.94f, 0.85f, arcEase),
-            new(0.46f, back, Easing: arcEase),
-            new(0.56f, middle, Easing: easeInOut),
-            new(0.64f, front, Easing: easeInOut),
-            new(0.72f, front),
-            new(0.82f, Vector2.Zero, Easing: easeOut),
-            new(0.92f, Vector2.Zero),
-            new(1.00f, -pitch, 0.99f, Easing: easeIn),
-        ]);
-
-        StartMarkGroupLoop(duration, easeOut, easeInOut);
-        StartMarkHaloPulse(duration);
-    }
-
-    /// <summary>
-    /// Drives one slab's Translation/Scale/Opacity from a single key table so
-    /// the three properties stay phase-locked through the assembly loop.
-    /// </summary>
-    private static void StartMarkSlabLoop(UIElement slab, TimeSpan duration, MarkKey[] keys)
-    {
-        var visual = GetVisual(slab);
-        var compositor = visual.Compositor;
-        var translation = compositor.CreateVector3KeyFrameAnimation();
-        var scale = compositor.CreateVector3KeyFrameAnimation();
-        var opacity = compositor.CreateScalarKeyFrameAnimation();
-        foreach (var animation in new KeyFrameAnimation[] { translation, scale, opacity })
-        {
-            animation.Duration = duration;
-            animation.IterationBehavior = AnimationIterationBehavior.Forever;
-        }
-
-        foreach (var key in keys)
-        {
-            var translationValue = new Vector3(key.Translation.X, key.Translation.Y, 0f);
-            var scaleValue = new Vector3(key.Scale, key.Scale, 1f);
-            if (key.Easing is null)
-            {
-                translation.InsertKeyFrame(key.Progress, translationValue);
-                scale.InsertKeyFrame(key.Progress, scaleValue);
-                opacity.InsertKeyFrame(key.Progress, key.Opacity);
-            }
-            else
-            {
-                translation.InsertKeyFrame(key.Progress, translationValue, key.Easing);
-                scale.InsertKeyFrame(key.Progress, scaleValue, key.Easing);
-                opacity.InsertKeyFrame(key.Progress, key.Opacity, key.Easing);
-            }
-        }
-
-        visual.StartAnimation("Translation", translation);
-        visual.StartAnimation("Scale", scale);
-        visual.StartAnimation("Opacity", opacity);
-    }
-
-    /// <summary>
-    /// Group-level motion on SceneMarkGroup only: a breathe at the coincided
-    /// tile, a lift at the merge impact, a settle breathe on the finished
-    /// logo, and a squash into the snap-shut.
-    /// </summary>
-    private void StartMarkGroupLoop(
-        TimeSpan duration,
-        CompositionEasingFunction easeOut,
-        CompositionEasingFunction easeInOut)
-    {
-        var visual = GetVisual(SceneMarkGroup);
-        var translation = visual.Compositor.CreateVector3KeyFrameAnimation();
-        translation.Duration = duration;
-        translation.IterationBehavior = AnimationIterationBehavior.Forever;
-        translation.InsertKeyFrame(0.00f, Vector3.Zero);
-        translation.InsertKeyFrame(0.05f, new Vector3(0, -1.6f, 0), easeInOut);
-        translation.InsertKeyFrame(0.10f, Vector3.Zero, easeInOut);
-        translation.InsertKeyFrame(0.64f, Vector3.Zero);
-        translation.InsertKeyFrame(0.70f, new Vector3(0, -1.1f, 0), easeOut);
-        translation.InsertKeyFrame(0.78f, Vector3.Zero, easeInOut);
-        translation.InsertKeyFrame(0.85f, new Vector3(0, -3.2f, 0), easeInOut);
-        translation.InsertKeyFrame(0.92f, Vector3.Zero, easeInOut);
-        translation.InsertKeyFrame(1.00f, Vector3.Zero);
-        visual.StartAnimation("Translation", translation);
-
+        var visual = GetVisual(SceneLogo);
+        var ease = visual.Compositor.CreateCubicBezierEasingFunction(
+            new Vector2(0.45f, 0f), new Vector2(0.55f, 1f));
         var scale = visual.Compositor.CreateVector3KeyFrameAnimation();
-        scale.Duration = duration;
+        scale.Duration = LogoPulseDuration;
         scale.IterationBehavior = AnimationIterationBehavior.Forever;
-        scale.InsertKeyFrame(0.00f, Vector3.One);
-        scale.InsertKeyFrame(0.05f, new Vector3(1.012f, 1.012f, 1f), easeInOut);
-        scale.InsertKeyFrame(0.10f, Vector3.One, easeInOut);
-        scale.InsertKeyFrame(0.64f, Vector3.One);
-        scale.InsertKeyFrame(0.70f, new Vector3(1.02f, 1.02f, 1f), easeOut);
-        scale.InsertKeyFrame(0.78f, Vector3.One, easeInOut);
-        scale.InsertKeyFrame(0.96f, new Vector3(0.99f, 0.99f, 1f));
-        scale.InsertKeyFrame(1.00f, Vector3.One);
+        scale.InsertKeyFrame(0f, Vector3.One);
+        scale.InsertKeyFrame(0.5f, new Vector3(1.035f, 1.035f, 1f), ease);
+        scale.InsertKeyFrame(1f, Vector3.One, ease);
         visual.StartAnimation("Scale", scale);
+
+        StartMarkHaloPulse();
     }
 
-    /// <summary>
-    /// The shared halo beats with the loop — one pulse per permutation hop,
-    /// a bigger flash as the slabs merge into the logo. Also restarted by
-    /// the scene entrance once its one-shot fade hands Opacity back.
-    /// </summary>
-    private void StartMarkHaloPulse(TimeSpan duration)
+    private void StartMarkHaloPulse()
     {
         var visual = GetVisual(SceneHalo);
-        var compositor = visual.Compositor;
-        var easeInOut = compositor.CreateCubicBezierEasingFunction(
-            new Vector2(0.65f, 0f), new Vector2(0.35f, 1f));
-
-        var opacity = compositor.CreateScalarKeyFrameAnimation();
-        opacity.Duration = duration;
+        var ease = visual.Compositor.CreateCubicBezierEasingFunction(
+            new Vector2(0.45f, 0f), new Vector2(0.55f, 1f));
+        var opacity = visual.Compositor.CreateScalarKeyFrameAnimation();
+        opacity.Duration = LogoPulseDuration;
         opacity.IterationBehavior = AnimationIterationBehavior.Forever;
-        opacity.InsertKeyFrame(0.00f, 0.55f);
-        opacity.InsertKeyFrame(0.41f, 0.78f, easeInOut);
-        opacity.InsertKeyFrame(0.46f, 0.55f, easeInOut);
-        opacity.InsertKeyFrame(0.51f, 0.78f, easeInOut);
-        opacity.InsertKeyFrame(0.56f, 0.55f, easeInOut);
-        opacity.InsertKeyFrame(0.61f, 0.78f, easeInOut);
-        opacity.InsertKeyFrame(0.66f, 0.55f, easeInOut);
-        opacity.InsertKeyFrame(0.74f, 0.95f, easeInOut);
-        opacity.InsertKeyFrame(0.82f, 0.55f, easeInOut);
-        opacity.InsertKeyFrame(1.00f, 0.55f);
+        opacity.InsertKeyFrame(0f, 0.55f);
+        opacity.InsertKeyFrame(0.5f, 0.72f, ease);
+        opacity.InsertKeyFrame(1f, 0.55f, ease);
         visual.StartAnimation("Opacity", opacity);
-
-        var scale = compositor.CreateVector3KeyFrameAnimation();
-        scale.Duration = duration;
-        scale.IterationBehavior = AnimationIterationBehavior.Forever;
-        scale.InsertKeyFrame(0.00f, Vector3.One);
-        scale.InsertKeyFrame(0.41f, new Vector3(1.06f, 1.06f, 1f), easeInOut);
-        scale.InsertKeyFrame(0.46f, Vector3.One, easeInOut);
-        scale.InsertKeyFrame(0.51f, new Vector3(1.06f, 1.06f, 1f), easeInOut);
-        scale.InsertKeyFrame(0.56f, Vector3.One, easeInOut);
-        scale.InsertKeyFrame(0.61f, new Vector3(1.06f, 1.06f, 1f), easeInOut);
-        scale.InsertKeyFrame(0.66f, Vector3.One, easeInOut);
-        scale.InsertKeyFrame(0.74f, new Vector3(1.12f, 1.12f, 1f), easeInOut);
-        scale.InsertKeyFrame(0.82f, Vector3.One, easeInOut);
-        scale.InsertKeyFrame(1.00f, Vector3.One);
-        visual.StartAnimation("Scale", scale);
     }
 
-    /// <summary>
-    /// Parks the mark slabs and group on the exact logo pose — the static
-    /// fallback for instant scene applies and disabled animations.
-    /// </summary>
     private void ResetMarkPose()
     {
-        foreach (var element in new UIElement[]
-                 { SceneMarkSlab0, SceneMarkSlab1, SceneMarkSlab2, SceneMarkGroup })
-        {
-            var visual = GetVisual(element);
-            visual.StopAnimation("Translation");
-            visual.StopAnimation("Scale");
-            visual.StopAnimation("Opacity");
-            element.Translation = Vector3.Zero;
-            visual.Scale = Vector3.One;
-            visual.Opacity = 1f;
-        }
+        var visual = GetVisual(SceneLogo);
+        visual.StopAnimation("Scale");
+        visual.Scale = Vector3.One;
     }
-
-    private readonly record struct MarkKey(
-        float Progress,
-        Vector2 Translation,
-        float Scale = 1f,
-        float Opacity = 1f,
-        CompositionEasingFunction? Easing = null);
 
     // ── Step 2: three scattered desktop files get inhaled one by one — each
     // landing squashes the box and pops that file's icon into a tidy slot
@@ -764,7 +564,7 @@ public sealed partial class OnboardingWindow
                 _stepIndex == 0 &&
                 _sceneLoopGeneration == loopGeneration)
             {
-                StartMarkHaloPulse(TimeSpan.FromMilliseconds(MarkAssemblyLoopMs));
+                StartMarkHaloPulse();
             }
         };
 

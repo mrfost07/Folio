@@ -194,6 +194,17 @@ public sealed class InProcessSettingsWidgetActions : ISettingsWidgetActions
             ResetCapsuleOverridesOnUi(reset));
     }
 
+    public Task SetAllWidgetsCollapsedAsync(bool collapsed) =>
+        Folio.Platform.UiDispatch.RunAsync(() =>
+        {
+            _widgetManager?.SetAllWidgetsCollapsed(collapsed);
+            return Task.CompletedTask;
+        });
+
+    public Task<bool> RunPlacementTemplateActionAsync(string action) =>
+        Folio.Platform.UiDispatch.RunAsync(() =>
+            _widgetManager?.RunPlacementTemplateActionAsync(action) ?? Task.FromResult(false));
+
     private Task ResetCapsuleOverridesOnUi(Contracts.CapsuleOverrideReset reset)
     {
         // Same graph-lock gate as the other layout writers (病 A).

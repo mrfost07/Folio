@@ -25,7 +25,7 @@ public sealed class ManagedStorageSettingsCoordinator : IManagedStorageSettings
     {
         FileWidgetSettingsSlice fileWidget = _settings.Settings.FileWidget;
         return new ManagedStoragePresentationSettings(
-            NormalizeDropAction(fileWidget.ManagedDropAction),
+            ManagedDropActions.Normalize(fileWidget.ManagedDropAction),
             NormalizeDragOutAction(fileWidget.ManagedDragOutAction),
             fileWidget.DragOutModifierTipEnabled,
             fileWidget.DragOutResultHintEnabled,
@@ -48,7 +48,7 @@ public sealed class ManagedStorageSettingsCoordinator : IManagedStorageSettings
     public bool SetManagedDropAction(string? action)
     {
         ThrowIfStopped();
-        string normalized = NormalizeDropAction(action);
+        string normalized = ManagedDropActions.Normalize(action);
         FileWidgetSettingsSlice fileWidget = _settings.Settings.FileWidget;
         if (string.Equals(
                 fileWidget.ManagedDropAction,
@@ -108,13 +108,6 @@ public sealed class ManagedStorageSettingsCoordinator : IManagedStorageSettings
         _settings.SaveDebounced();
         return true;
     }
-
-    private static string NormalizeDropAction(string? action) => action switch
-    {
-        ManagedDropActions.Copy => ManagedDropActions.Copy,
-        ManagedDropActions.FollowWindows => ManagedDropActions.FollowWindows,
-        _ => ManagedDropActions.Move
-    };
 
     // Drag-out falls back to FollowWindows, not Move: advertising no
     // preferred effect keeps the receiver's native default and never hands

@@ -1014,7 +1014,7 @@ public sealed partial class WidgetManager
         return CreateManagedWidgetCoreAsync(name, placeForFirstRun: true);
     }
 
-    private async Task CreateManagedWidgetCoreAsync(string? name, bool placeForFirstRun)
+    private async Task<WidgetConfig> CreateManagedWidgetCoreAsync(string? name, bool placeForFirstRun)
     {
         name = string.IsNullOrWhiteSpace(name)
             ? _localizationService.T("Widget.DefaultName")
@@ -1050,6 +1050,7 @@ public sealed partial class WidgetManager
         await _settingsService.SaveAsync();
 
         await CreateWidgetFromConfigAsync(config, revealAfterCreate: true);
+        return config;
     }
 
     public async Task CreateWidgetOfKindAsync(WidgetKind widgetKind)

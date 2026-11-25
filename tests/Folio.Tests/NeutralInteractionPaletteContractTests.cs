@@ -128,16 +128,13 @@ public sealed class NeutralInteractionPaletteContractTests
     }
 
     [Fact]
-    public void ResizeSnapGuides_KeepTheAccentColor()
+    public void ResizeSnapGuides_UseFolioBlue()
     {
-        // Maintainer design specification (2026-09-13): resizing/drag-snap feedback reads
-        // better in the theme color, so the guide tone is the accent even
-        // though the other drag indicators are neutral.
         string guides = Read("src/Folio/Services/ResizeGuideOverlayService.cs");
         string body = MethodBody(guides, "Windows.UI.Color GetHighlightColor()");
 
-        Assert.Contains("GetEffectiveAccentColor", body, StringComparison.Ordinal);
-        Assert.DoesNotContain("NeutralInteractionBrush", body, StringComparison.Ordinal);
+        Assert.Contains("AccentColorHelper.DefaultAccentColor", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("GetEffectiveAccentColor", body, StringComparison.Ordinal);
     }
 
     [Fact]

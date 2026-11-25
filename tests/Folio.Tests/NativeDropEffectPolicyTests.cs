@@ -4,6 +4,22 @@ namespace Folio.Tests;
 
 public sealed class NativeDropEffectPolicyTests
 {
+    [Theory]
+    [InlineData(0u, 7u, false, NativeDropEffectPolicy.Link, true)]
+    [InlineData(0u, 3u, false, NativeDropEffectPolicy.Copy, true)]
+    [InlineData(0u, 2u, false, NativeDropEffectPolicy.None, true)]
+    [InlineData(NativeDropEffectPolicy.ControlKeyState, 7u, false, NativeDropEffectPolicy.Copy, false)]
+    [InlineData(NativeDropEffectPolicy.ShiftKeyState, 7u, false, NativeDropEffectPolicy.Move, false)]
+    [InlineData(0u, 7u, true, NativeDropEffectPolicy.Copy, false)]
+    public void ShortcutDefault_UsesNonMovingFeedbackAndPreservesModifiers(
+        uint keyState, uint allowed, bool temporary, uint feedback, bool shortcut)
+    {
+        Assert.Equal(feedback, NativeDropEffectPolicy.ResolveFeedbackEffect(
+            hasFileData: true, temporary, keyState, allowed, defaultShortcut: true));
+        Assert.Equal(shortcut, NativeDropEffectPolicy.ShouldCreateMappedShortcut(
+            temporary, keyState, defaultShortcut: true));
+    }
+
     [Fact]
     public void PayloadClassification_PhysicalPathsWinOverVirtualDescriptors()
     {

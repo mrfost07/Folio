@@ -130,11 +130,7 @@
                 <Image
                     Width="18"
                     Height="18"
-                    VerticalAlignment="Center">
-                    <Image.Source>
-                        <media:SvgImageSource UriSource="ms-appx:///Assets/folio.svg" />
-                    </Image.Source>
-                </Image>
+                    VerticalAlignment="Center" Source="ms-appx:///Assets/Store/Square310x310Logo.png" />
 <TextBlock
 VerticalAlignment="Center"
 FontSize="14"
@@ -3235,11 +3231,7 @@ Text="Folio" />
                                     <Image
                                         Width="34"
                                         Height="34"
-                                        VerticalAlignment="Top">
-                                        <Image.Source>
-                                            <media:SvgImageSource UriSource="ms-appx:///Assets/folio.svg" />
-                                        </Image.Source>
-                                    </Image>
+                                        VerticalAlignment="Top" Source="ms-appx:///Assets/Store/Square310x310Logo.png" />
                                     <StackPanel
                                         Grid.Column="1"
                                         Spacing="3"
@@ -3661,11 +3653,7 @@ Text="Folio" />
                             Width="46"
                             Height="46"
                             HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                            <Image.Source>
-                                <media:SvgImageSource UriSource="ms-appx:///Assets/folio.svg" />
-                            </Image.Source>
-                        </Image>
+                            VerticalAlignment="Center" Source="ms-appx:///Assets/Store/Square310x310Logo.png" />
                         <StackPanel
                             Grid.Column="1"
                             VerticalAlignment="Center"

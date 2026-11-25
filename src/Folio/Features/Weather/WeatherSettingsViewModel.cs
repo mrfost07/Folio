@@ -54,7 +54,8 @@ public sealed partial class WeatherSettingsViewModel : ObservableObject
     private static readonly string[] SkinValues =
     [
         WeatherOptionKinds.SkinStandard,
-        WeatherOptionKinds.SkinRich
+        WeatherOptionKinds.SkinRich,
+        WeatherOptionKinds.SkinForecast
     ];
 
     private static readonly string[] IconStyleValues = WeatherOptionKinds.IconStyleValues;
@@ -699,6 +700,7 @@ public sealed partial class WeatherSettingsViewModel : ObservableObject
     private string GetSkinDisplayName(string skin) => skin switch
     {
         WeatherOptionKinds.SkinRich => _localize("Weather.Skin.Rich"),
+        WeatherOptionKinds.SkinForecast => _localize("Weather.Skin.Forecast"),
         _ => _localize("Weather.Skin.Standard")
     };
 

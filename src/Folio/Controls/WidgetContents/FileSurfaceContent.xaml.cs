@@ -4332,27 +4332,27 @@ public sealed partial class FileSurfaceContent :
             {
                 if (intentOverride == FileDropIntent.Shortcut)
                 {
+                    string destination = ViewModel.CurrentFolderPath ??
+                        ViewModel.MappedFolderPath ?? string.Empty;
                     IReadOnlyList<string> created =
-                        await CreateShortcutDropAsync(
+                        await CreateShortcutFilesAsync(
                             droppedFiles.Where(file => !file.ForceManagedCopy)
                                 .ToArray(),
-                            ViewModel.CurrentFolderPath ??
-                                ViewModel.MappedFolderPath,
+                            destination,
                             ActiveImportCancellationToken);
                     importedItemCount += created.Count;
-                    if (created.Count > 0 &&
-                        (nextPreferredManualIndex.HasValue ||
-                         preferredStackAnchor.HasValue))
+                    if (created.Count > 0)
                     {
-                        int insertedCount =
-                            await ViewModel.ApplyManualInsertionAsync(
-                                created,
-                                nextPreferredManualIndex ?? 0,
-                                activateManualSortOnSuccess,
-                                preferredStackAnchor);
+                        await ViewModel.ApplyImportedTransferResultsAsync(
+                            created.Select(path => new FileService.FileTransferResult(path, path)),
+                            shouldMove: false,
+                            destination,
+                            nextPreferredManualIndex,
+                            activateManualSortOnSuccess,
+                            preferredStackAnchor);
                         if (nextPreferredManualIndex.HasValue)
                         {
-                            nextPreferredManualIndex += insertedCount;
+                            nextPreferredManualIndex += created.Count;
                         }
                     }
                 }
@@ -4649,7 +4649,7 @@ public sealed partial class FileSurfaceContent :
             ShowUnsafeDirectoryDropFeedback();
             return false;
         }
-        bool sameVolume = FileDropIntentPolicy.AreAllOnSameVolume(
+        bool sameVolume = !followWindows || FileDropIntentPolicy.AreAllOnSameVolume(
             droppedFiles.Select(file => file.Path),
             destinationPath);
         // Null means the entry point had no OLE negotiation (WM_DROPFILES) and
@@ -4690,8 +4690,15 @@ public sealed partial class FileSurfaceContent :
                         canMove: sourceCanMove,
                         altDown: Win32Helper.IsKeyPressed(VirtualKey.Menu),
                         followWindows: false,
-                        sameVolume: sameVolume)
+                        sameVolume: sameVolume,
+                        defaultShortcut: _settingsService.Settings.FileWidget.ManagedDropAction ==
+                            SettingsService.ManagedDropActionShortcut)
                 });
+        if (intent == FileDropIntent.None)
+        {
+            return false;
+        }
+
         bool? moveWhenMapped = ResolveMoveWhenMapped(mapped, intent);
         if (targetItem is WidgetStackItem stack)
         {
@@ -6203,7 +6210,12 @@ public sealed partial class FileSurfaceContent :
         {
             return await ImportDroppedFilesAsync(
                 droppedFiles,
-                moveWhenMapped);
+                moveWhenMapped,
+                intentOverride: moveWhenMapped is null &&
+                    _settingsService.Settings.FileWidget.ManagedDropAction ==
+                        SettingsService.ManagedDropActionShortcut
+                    ? FileDropIntent.Shortcut
+                    : null);
         }
         finally
         {

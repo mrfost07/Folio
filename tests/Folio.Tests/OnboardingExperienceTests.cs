@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace Folio.Tests;
 
@@ -42,7 +42,7 @@ public sealed class OnboardingExperienceTests
         "Onboarding.Feature.Search",
         "Onboarding.Feature.Weather",
         "Onboarding.Feature.Music",
-        "Onboarding.Scene.MoveBadge",
+        "Onboarding.Scene.ShortcutBadge",
         "Widget.Empty.ActionsHint"
     ];
 
@@ -69,6 +69,10 @@ public sealed class OnboardingExperienceTests
         Assert.Contains("x:Name=\"SceneStage\"", xaml, StringComparison.Ordinal);
         Assert.Contains("x:Name=\"SceneHalo\"", xaml, StringComparison.Ordinal);
         Assert.Contains("x:Name=\"SceneMark\"", xaml, StringComparison.Ordinal);
+        Assert.Contains(
+            "x:Name=\"SceneLogo\" Source=\"ms-appx:///Assets/Store/Square310x310Logo.png\"",
+            xaml,
+            StringComparison.Ordinal);
         Assert.Contains("x:Name=\"SceneDropBox\"", xaml, StringComparison.Ordinal);
         Assert.Contains("x:Name=\"SceneFileToken\"", xaml, StringComparison.Ordinal);
         Assert.Contains("x:Name=\"SceneKeycapHost\"", xaml, StringComparison.Ordinal);
@@ -315,7 +319,7 @@ public sealed class OnboardingExperienceTests
             "src/Folio/Strings/zh-CN.json")));
 
         Assert.Contains(
-            "移动",
+            "创建快捷方式",
             strings.RootElement.GetProperty("Onboarding.Step2.Body").GetString(),
             StringComparison.Ordinal);
         Assert.DoesNotContain(
@@ -339,19 +343,16 @@ public sealed class OnboardingExperienceTests
     }
 
     [Fact]
-    public void DefaultManagedDropAction_RemainsMove()
+    public void DefaultManagedDropAction_KeepsTheSourcesInPlace()
     {
         string root = FindRepositoryRoot();
-        string settingsModel = File.ReadAllText(Path.Combine(
-            root,
-            "src/Folio/Models/FileWidgetSettingsSlice.cs"));
         string userGuide = File.ReadAllText(Path.Combine(
             root,
             "docs/articles/15-getting-started.md"));
 
-        Assert.Contains("ManagedDropAction { get; set; } = \"Move\"", settingsModel, StringComparison.Ordinal);
-        Assert.Contains("默认拖入行为是移动", userGuide, StringComparison.Ordinal);
-        Assert.DoesNotContain("默认拖入行为是复制", userGuide, StringComparison.Ordinal);
+        Assert.Equal(Folio.Contracts.ManagedDropActions.Shortcut,
+            new Folio.Models.FileWidgetSettingsSlice().ManagedDropAction);
+        Assert.Contains("默认拖入行为是创建快捷方式", userGuide, StringComparison.Ordinal);
     }
 
     [Fact]

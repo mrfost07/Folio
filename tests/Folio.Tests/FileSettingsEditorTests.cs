@@ -89,7 +89,7 @@ public sealed class FileSettingsEditorTests : IDisposable
                     settings.Settings.FileWidget.DefaultManagedStorageRootPath = " ";
                 });
 
-        Assert.Equal(ManagedDropActions.Move, storage.DropAction);
+        Assert.Equal(ManagedDropActions.Shortcut, storage.DropAction);
         Assert.Equal(
             SettingsService.GetDefaultManagedStorageRootPath(),
             storage.RootPath,
@@ -281,7 +281,9 @@ public sealed class FileSettingsEditorTests : IDisposable
         (_, _, ManagedStorageSettingsViewModel storage) = CreateEditors(_root);
 
         SettingsOption[] options = [.. storage.AvailableDropActionOptions];
-        Assert.Equal(3, options.Length);
+        Assert.Equal(4, options.Length);
+        Assert.Equal(ManagedDropActions.Shortcut, options[3].Value);
+        Assert.Equal("Widget.CreateShortcut", options[3].DisplayName);
         Assert.Equal(ManagedDropActions.Copy, options[0].Value);
         Assert.Equal(ManagedDropActions.Move, options[1].Value);
         Assert.Equal(ManagedDropActions.FollowWindows, options[2].Value);

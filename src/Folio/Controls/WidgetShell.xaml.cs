@@ -1847,7 +1847,7 @@ public sealed partial class WidgetShell : UserControl
             }
             ForceClearDragCue();
         }
-        _isMinimalCompactStyle = string.Equals(
+        _isMinimalCompactStyle = contentMode == SettingsService.WidgetCompactContentModeTitleOnly || string.Equals(
             contentMode,
             SettingsService.WidgetCompactContentModeMinimal,
             StringComparison.Ordinal);
@@ -2518,7 +2518,9 @@ public sealed partial class WidgetShell : UserControl
         // icon image. Setting the target property directly is immune to that reset.
         // When the icon should be visible we honor the user's global icon-mode
         // preference so the compact glyph still respects their setting.
-        bool showTitleIcon = !hasIconImage && !useFullBleed && presentation.Thumbnail is null && !showVinyl;
+        CompactIdentityHost.Visibility = presentation.TitleOnly ? Visibility.Collapsed : Visibility.Visible;
+        bool showTitleIcon = !presentation.TitleOnly &&
+            !hasIconImage && !useFullBleed && presentation.Thumbnail is null && !showVinyl;
         CompactTitleIcon.Visibility = showTitleIcon ? Visibility.Visible : Visibility.Collapsed;
         // When the icon is visible we honor the user's global icon-mode
         // preference so the compact glyph still respects their setting; fall back

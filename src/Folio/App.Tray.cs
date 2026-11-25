@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
+using Windows.ApplicationModel.DataTransfer;
 using WinRT.Interop;
 using DrawingPoint = System.Drawing.Point;
 
@@ -26,6 +27,9 @@ public partial class App
     /// <summary>Tray icon style that keeps the notification-area icon absent
     /// for the whole session (see <see cref="IsTrayIconHiddenByUserSetting"/>).</summary>
     private const string TrayIconStyleHidden = "Hidden";
+    private MenuFlyoutItem? _trayGroupDesktopItem;
+    private MenuFlyoutItem? _trayGroupDesktopByTypeItem;
+    private MenuFlyoutItem? _trayHideGroupedOriginalsItem;
 
     // Reads the Core slice, not the AppSettings facade: the facade-access
     // ratchet forbids new passthrough reads (SettingsSliceOwnershipContract).
@@ -115,6 +119,12 @@ public partial class App
 
         _trayCreateWidgetItems.Clear();
         contextMenu.Items.Add(organizeDesktopItem);
+        _trayGroupDesktopItem = CreateDesktopGroupingMenuItem(contextMenu, splitByType: false);
+        _trayGroupDesktopByTypeItem = CreateDesktopGroupingMenuItem(contextMenu, splitByType: true);
+        contextMenu.Items.Add(_trayGroupDesktopItem);
+        contextMenu.Items.Add(_trayGroupDesktopByTypeItem);
+        _trayHideGroupedOriginalsItem = CreateHideGroupedOriginalsItem(contextMenu);
+        contextMenu.Items.Add(_trayHideGroupedOriginalsItem);
         contextMenu.Items.Add(new MenuFlyoutSeparator());
         foreach (var descriptor in new WidgetContentFactory(LocalizationService).GetCreateEntryDescriptors())
         {
@@ -503,6 +513,16 @@ public partial class App
         if (_trayOrganizeDesktopItem is not null)
         {
             _trayOrganizeDesktopItem.IsEnabled = canCreateWidget;
+        }
+
+        if (_trayGroupDesktopItem is not null)
+        {
+            _trayGroupDesktopItem.IsEnabled = canCreateWidget;
+        }
+
+        if (_trayGroupDesktopByTypeItem is not null)
+        {
+            _trayGroupDesktopByTypeItem.IsEnabled = canCreateWidget;
         }
 
         foreach (var item in _trayCreateWidgetItems.Values)
@@ -1093,6 +1113,23 @@ public partial class App
                 "Tray.OrganizeDesktop");
         }
 
+        if (_trayGroupDesktopItem is not null)
+        {
+            _trayGroupDesktopItem.Text = LocalizationService.T("DesktopIcons.GroupItems");
+        }
+
+        if (_trayGroupDesktopByTypeItem is not null)
+        {
+            _trayGroupDesktopByTypeItem.Text = LocalizationService.T("DesktopIcons.GroupByType");
+        }
+
+        if (_trayHideGroupedOriginalsItem is not null)
+        {
+            _trayHideGroupedOriginalsItem.Text = LocalizationService.T(DesktopOriginals?.Enabled == true
+                ? "DesktopIcons.ShowOriginals" : "DesktopIcons.HideOriginals");
+            _trayHideGroupedOriginalsItem.IsEnabled = DesktopOriginals is not null;
+        }
+
         if (_trayMapFolderItem is not null)
         {
             _trayMapFolderItem.Text = LocalizationService.T("Common.NewFolderMapping");
@@ -1170,6 +1207,70 @@ public partial class App
         contextMenu.Hide();
         await Task.Yield();
         await action();
+    }
+
+    private MenuFlyoutItem CreateHideGroupedOriginalsItem(MenuFlyout menu)
+    {
+        var item = new MenuFlyoutItem
+        {
+            Text = LocalizationService.T("DesktopIcons.HideOriginals"),
+            Width = TrayMenuItemWidth,
+            Icon = new SymbolIcon(Symbol.View),
+            IsEnabled = false
+        };
+        ToolTipService.SetToolTip(item, LocalizationService.T("DesktopIcons.HidingDescription"));
+        AttachTrayMenuItemInteraction(item,
+            () => RunTrayMenuActionAsync(menu, ToggleDesktopOriginalsAsync));
+        return item;
+    }
+
+    private MenuFlyoutItem CreateDesktopGroupingMenuItem(MenuFlyout menu, bool splitByType)
+    {
+        var item = new MenuFlyoutItem
+        {
+            Text = LocalizationService.T(splitByType ? "DesktopIcons.GroupByType" : "DesktopIcons.GroupItems"),
+            Width = TrayMenuItemWidth,
+            Icon = new SymbolIcon(Symbol.Add)
+        };
+        AttachTrayMenuItemInteraction(item,
+            () => RunTrayMenuActionAsync(menu, () => GroupSelectedDesktopIconsAsync(splitByType)));
+        return item;
+    }
+
+    private async Task GroupSelectedDesktopIconsAsync(bool splitByType)
+    {
+        if (WidgetManager is not { } manager)
+        {
+            return;
+        }
+
+        try
+        {
+            var (selectedCount, paths) = await Task.Run(DesktopShellFolderView.ReadSelection);
+            IEnumerable<string> groupingPaths = paths;
+            if (selectedCount == 0)
+            {
+                DataPackageView clipboard = Clipboard.GetContent();
+                if (clipboard.Contains(StandardDataFormats.StorageItems))
+                {
+                    var items = await clipboard.GetStorageItemsAsync();
+                    groupingPaths = items.Select(item => item.Path);
+                }
+            }
+
+            if (await manager.CreateWidgetsFromDesktopPathsAsync(groupingPaths, splitByType))
+            {
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log($"[DesktopWidgets] Could not group selected desktop items: {ex.Message}");
+        }
+
+        _nativeNotificationService?.TryShow(
+            LocalizationService.T("DesktopIcons.GroupItems"),
+            LocalizationService.T("DesktopIcons.SelectForGrouping"));
     }
 
     private async Task RunTraySettingsActionAsync(MenuFlyout contextMenu, Action action)

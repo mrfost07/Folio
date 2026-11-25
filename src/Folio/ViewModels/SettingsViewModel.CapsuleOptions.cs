@@ -7,6 +7,12 @@ namespace Folio.ViewModels;
 
 public partial class SettingsViewModel
 {
+    public Task SetAllWidgetsCollapsedAsync(bool collapsed) =>
+        _widgetActions.SetAllWidgetsCollapsedAsync(collapsed);
+
+    public Task<bool> RunPlacementTemplateActionAsync(string action) =>
+        _widgetActions.RunPlacementTemplateActionAsync(action);
+
     // Batch 44: the capsule family's XAML binding surface (behavior, geometry,
     // content/privacy, arrangement, bar placement/direction/spacing, animation
     // presets, hover-response derived view state, delay sliders and the

@@ -99,7 +99,10 @@ public sealed partial class ContentWidgetWindow
                     ShouldDefaultNativeFileDropToMove,
                     CreateNativeFileDropDescription,
                     ShouldUseNativeFileDropVisual,
-                    ShouldFollowWindowsNativeFileDrop);
+                    ShouldFollowWindowsNativeFileDrop,
+                    () => CurrentContent is FileWidgetContentAdapter &&
+                          App.Current.SettingsService.Settings.FileWidget.ManagedDropAction ==
+                              SettingsService.ManagedDropActionShortcut);
                 target.DragEnterEvent += NativeFileDropTarget_DragEnterEvent;
                 target.DragOverEvent += NativeFileDropTarget_DragOverEvent;
                 target.DragLeaveEvent += NativeFileDropTarget_DragLeaveEvent;

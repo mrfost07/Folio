@@ -1489,7 +1489,7 @@ internal sealed class WidgetTopologyLayoutService
         }
     }
 
-    private static WidgetSurfaceLayoutProfile CaptureWidgetLayout(
+    internal static WidgetSurfaceLayoutProfile CaptureWidgetLayout(
         WidgetConfig config,
         IReadOnlyList<WidgetTopologyMonitorProfile> monitors)
     {
@@ -1517,7 +1517,7 @@ internal sealed class WidgetTopologyLayoutService
         return layout;
     }
 
-    private static WidgetSurfaceLayoutProfile CaptureGroupLayout(
+    internal static WidgetSurfaceLayoutProfile CaptureGroupLayout(
         WidgetGroupConfig group,
         IReadOnlyList<WidgetTopologyMonitorProfile> monitors)
     {
@@ -1625,7 +1625,7 @@ internal sealed class WidgetTopologyLayoutService
             monitors[0];
     }
 
-    private static void ApplyToWidget(WidgetConfig config, WidgetSurfaceLayoutProfile layout)
+    internal static void ApplyToWidget(WidgetConfig config, WidgetSurfaceLayoutProfile layout)
     {
         config.X = layout.X;
         config.Y = layout.Y;
@@ -1650,7 +1650,7 @@ internal sealed class WidgetTopologyLayoutService
         config.CompactWidth = layout.CompactWidth;
     }
 
-    private static void ApplyToGroup(WidgetGroupConfig group, WidgetSurfaceLayoutProfile layout)
+    internal static void ApplyToGroup(WidgetGroupConfig group, WidgetSurfaceLayoutProfile layout)
     {
         group.X = layout.X;
         group.Y = layout.Y;

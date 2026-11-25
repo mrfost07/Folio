@@ -69,10 +69,7 @@
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="CornerRadius" Value="16"/>
             </Style>
-            <!-- Brand glow gradients for the illustration canvas. Decorative,
-                 theme-fixed brand art (same blue family as Assets/folio.svg);
-                 intentionally identical in Light/Dark — do not theme-split
-                 without re-checking the logo gradient. -->
+            <!-- Blue accents behind the onboarding illustrations. -->
             <RadialGradientBrush x:Key="SceneGlowAzureBrush" GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
                 <GradientStop Offset="0" Color="#241691E8"/>
                 <GradientStop Offset="1" Color="#001691E8"/>
@@ -126,24 +123,13 @@
                     <!-- persistent soft glow -->
                     <Ellipse x:Name="SceneHalo" Canvas.Left="40" Canvas.Top="90" Width="280" Height="280" Opacity="0.55" Fill="{StaticResource SceneGlowSkyBrush}" />
 
-                    <!-- Step 1 hero: Folio mark. The logo is sliced into its
-                         three slabs (back/mid/front — folio-mark-slab-*.svg,
-                         paths and gradients verbatim from Assets/folio.svg)
-                         so the assembly loop can fan, permute, and restack
-                         them; zero translation = the exact logo. Group-level
-                         loop motion lives on SceneMarkGroup so Set() keeps
-                         transitioning only the outer SceneMark. -->
                     <Grid
                         x:Name="SceneMark"
                         Canvas.Left="116"
                         Canvas.Top="146"
                         Width="128"
                         Height="128">
-                        <Grid x:Name="SceneMarkGroup">
-                            <Image x:Name="SceneMarkSlab0" Source="ms-appx:///Assets/folio-mark-slab-0.svg"/>
-                            <Image x:Name="SceneMarkSlab1" Source="ms-appx:///Assets/folio-mark-slab-1.svg"/>
-                            <Image x:Name="SceneMarkSlab2" Source="ms-appx:///Assets/folio-mark-slab-2.svg"/>
-                        </Grid>
+                        <Image x:Name="SceneLogo" Source="ms-appx:///Assets/Store/Square310x310Logo.png"/>
                     </Grid>
 
                     <!-- Step 2 hero: scattered desktop files get inhaled into the
@@ -217,7 +203,7 @@
                             Background="{ThemeResource AccentFillColorDefaultBrush}"
                             CornerRadius="10"
                             Opacity="0">
-                            <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" svc:Localized.Key="Onboarding.Scene.MoveBadge"/>
+                            <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" svc:Localized.Key="Onboarding.Scene.ShortcutBadge"/>
                         </Border>
                         <Border
                             x:Name="ScenePathChip"
@@ -341,7 +327,7 @@
                                         Background="{ThemeResource AccentFillColorDefaultBrush}"
                                         CornerRadius="16"
                                         Opacity="0"/>
-                                    <Image Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" Source="ms-appx:///Assets/folio.svg"/>
+                                    <Image Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" Source="ms-appx:///Assets/Store/Square310x310Logo.png"/>
                                 </Grid>
                                 <FontIcon FontSize="11" VerticalAlignment="Center" Glyph="&#xE701;" Opacity="0.6" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                 <FontIcon FontSize="11" VerticalAlignment="Center" Glyph="&#xE767;" Opacity="0.6" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>

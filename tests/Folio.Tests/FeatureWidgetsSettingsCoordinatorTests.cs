@@ -65,7 +65,7 @@ public sealed class FeatureWidgetsSettingsCoordinatorTests : IDisposable
         // Invalid music mode falls back to Auto; invalid misc picks fall
         // back to Move / Link / Explorer, matching the page normalizers.
         Assert.Equal(SettingsService.MusicDisplayModeAuto, music.MusicDisplayMode);
-        Assert.Equal(SettingsService.ManagedDropActionMove,
+        Assert.Equal(SettingsService.ManagedDropActionShortcut,
             settings.Settings.FileWidget.ManagedDropAction);
         Assert.Equal(SettingsService.AttachmentStorageModeLink,
             settings.Settings.QuickCapture.AttachmentStorageMode);

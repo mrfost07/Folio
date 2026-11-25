@@ -28,14 +28,16 @@ public sealed partial class ManagedStorageSettingsViewModel : ObservableObject
     [
         ManagedDropActions.Copy,
         ManagedDropActions.Move,
-        ManagedDropActions.FollowWindows
+        ManagedDropActions.FollowWindows,
+        ManagedDropActions.Shortcut
     ];
 
     private static readonly string[] DropActionNameKeys =
     [
         "Settings.DropAction.Copy",
         "Settings.DropAction.Move",
-        "Settings.DropAction.System"
+        "Settings.DropAction.System",
+        "Widget.CreateShortcut"
     ];
 
     private static readonly string[] DragOutActions =
@@ -57,7 +59,7 @@ public sealed partial class ManagedStorageSettingsViewModel : ObservableObject
     private bool _isSyncingPresentation;
     private string[]? _cachedDropActionNames;
     private string[]? _cachedDragOutActionNames;
-    private string _dropAction = ManagedDropActions.Move;
+    private string _dropAction = ManagedDropActions.Shortcut;
     private string _dragOutAction = ManagedDropActions.FollowWindows;
     private bool _dragOutModifierTipEnabled = true;
     private bool _dragOutResultHintEnabled = true;

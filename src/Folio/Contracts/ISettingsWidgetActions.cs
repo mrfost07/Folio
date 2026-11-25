@@ -67,6 +67,9 @@ public interface ISettingsWidgetActions
     /// </summary>
     Task ResetCapsuleOverrides(CapsuleOverrideReset reset);
 
+    Task SetAllWidgetsCollapsedAsync(bool collapsed) => Task.CompletedTask;
+    Task<bool> RunPlacementTemplateActionAsync(string action) => Task.FromResult(false);
+
     /// <summary>
     /// Clears every per-widget background override in the authoritative
     /// layout (metadata + stored asset files). The overrides live in the

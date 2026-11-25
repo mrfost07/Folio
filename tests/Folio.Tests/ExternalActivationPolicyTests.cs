@@ -66,7 +66,7 @@ public sealed class ExternalActivationPolicyTests
         string source = File.ReadAllText(TestPaths.FromRepository("src/Folio/App.xaml.cs"));
         string handler = Slice(
             source,
-            "private async Task HandleExternalActivationAsync()",
+            "private async Task HandleExternalActivationAsync(",
             "private bool DrainPendingNativeNotificationActivations()");
 
         Assert.Contains("ExternalActivationPolicy.DecideBareActivation", handler, StringComparison.Ordinal);
@@ -75,6 +75,24 @@ public sealed class ExternalActivationPolicyTests
         Assert.Contains("Coalesced duplicate bare activation", handler, StringComparison.Ordinal);
         Assert.DoesNotContain("ShowWidgetAsync(", handler, StringComparison.Ordinal);
         Assert.DoesNotContain("FirstOrDefault(", handler, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WindowsSignInDrainsForwardedRequestsWithoutImplicitlyOpeningSettings()
+    {
+        string source = File.ReadAllText(TestPaths.FromRepository("src/Folio/App.xaml.cs"));
+        string initializer = Slice(source,
+            "private async Task CompleteExternalActivationInitializationAsync()",
+            "private async Task HandleExternalActivationAsync(");
+        Assert.Contains("allowBareActivation: !IsStartupMode || startupSignalPending", initializer,
+            StringComparison.Ordinal);
+
+        string handler = Slice(source,
+            "private async Task HandleExternalActivationAsync(",
+            "private bool DrainPendingNativeNotificationActivations()");
+        int fallbackGuard = handler.IndexOf("if (activationHandled || !handleBareActivation)", StringComparison.Ordinal);
+        Assert.True(fallbackGuard > handler.IndexOf("TakePendingUpdateInstallResult()", StringComparison.Ordinal));
+        Assert.True(fallbackGuard < handler.IndexOf("OpenSettings();", StringComparison.Ordinal));
     }
 
     [Fact]

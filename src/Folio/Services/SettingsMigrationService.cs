@@ -21,7 +21,7 @@ public interface ISettingsMigration
 public sealed class SettingsMigrationPipeline
 {
     /// <summary>The current schema version that the application expects.</summary>
-    public const int CurrentSchemaVersion = 15;
+    public const int CurrentSchemaVersion = 16;
 
     private readonly List<ISettingsMigration> _migrations = [];
 
@@ -43,6 +43,7 @@ public sealed class SettingsMigrationPipeline
         _migrations.Add(new Migration_12_To_13());
         _migrations.Add(new Migration_13_To_14());
         _migrations.Add(new Migration_14_To_15());
+        _migrations.Add(new Migration_15_To_16());
     }
 
     /// <summary>
@@ -159,6 +160,21 @@ public sealed class SettingsMigrationPipeline
         {
             App.Log($"[SettingsMigration] Settings snapshot read-back failed: {ex.Message}");
             return null;
+        }
+    }
+}
+
+internal sealed class Migration_15_To_16 : ISettingsMigration
+{
+    public int FromVersion => 15;
+
+    public void Migrate(AppSettings settings)
+    {
+        // The old implicit default was persisted as Move. Start those profiles
+        // with links so the first ordinary drop after upgrade preserves its source.
+        if (settings.FileWidget.ManagedDropAction == SettingsService.ManagedDropActionMove)
+        {
+            settings.FileWidget.ManagedDropAction = SettingsService.ManagedDropActionShortcut;
         }
     }
 }

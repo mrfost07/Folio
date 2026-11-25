@@ -22,7 +22,7 @@
                 Orientation="Horizontal"
                 Spacing="10"
                 VerticalAlignment="Center">
-                <Image Width="18" Height="18" Source="ms-appx:///Assets/folio.svg" />
+                <Image Width="18" Height="18" Source="ms-appx:///Assets/Store/Square310x310Logo.png" />
                 <TextBlock
                     FontSize="13"
                     FontWeight="SemiBold"

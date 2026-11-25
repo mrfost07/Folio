@@ -26,7 +26,8 @@ public sealed partial class MusicSettingsViewModel : ObservableObject
         MusicDisplayModes.Cover,
         MusicDisplayModes.Controls,
         MusicDisplayModes.RecordVertical,
-        MusicDisplayModes.RecordHorizontal
+        MusicDisplayModes.RecordHorizontal,
+        MusicDisplayModes.Studio
     ];
 
     private static readonly string[] DisplayModeNameKeys =
@@ -35,7 +36,8 @@ public sealed partial class MusicSettingsViewModel : ObservableObject
         "Settings.Music.DisplayMode.Cover",
         "Settings.Music.DisplayMode.Controls",
         "Settings.Music.DisplayMode.RecordVertical",
-        "Settings.Music.DisplayMode.RecordHorizontal"
+        "Settings.Music.DisplayMode.RecordHorizontal",
+        "Settings.Music.DisplayMode.Studio"
     ];
 
     private readonly IFeatureWidgetsSettings _settings;

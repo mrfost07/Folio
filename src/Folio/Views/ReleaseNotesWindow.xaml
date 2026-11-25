@@ -28,7 +28,7 @@
                 <Image
                     Width="18"
                     Height="18"
-                    Source="ms-appx:///Assets/folio.svg" />
+                    Source="ms-appx:///Assets/Store/Square310x310Logo.png" />
                 <TextBlock
                     x:Name="WindowTitleText"
                     FontSize="13"

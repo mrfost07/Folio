@@ -348,7 +348,7 @@ public sealed class WeatherSettingsEditorTests : IDisposable
         Assert.Equal(2, editor.AvailableTemperatureUnitOptions.Count);
         Assert.Equal(3, editor.AvailableWindSpeedUnitOptions.Count);
         Assert.Equal(2, editor.AvailableDefaultViewOptions.Count);
-        Assert.Equal(2, editor.AvailableSkinOptions.Count);
+        Assert.Equal(3, editor.AvailableSkinOptions.Count);
         Assert.Equal(4, editor.AvailableIconStyleOptions.Count);
         Assert.Equal(2, editor.AvailableDataSourceOptions.Count);
         Assert.Equal(4, editor.AvailableRefreshIntervalOptions.Count);

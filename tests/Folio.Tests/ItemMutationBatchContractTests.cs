@@ -376,15 +376,15 @@ public sealed class ItemMutationBatchContractTests
     }
 
     [Fact]
-    public void BulkImportLoops_OpenExactlyOneScopeEach()
+    public void BulkImportsShareOneMutationScope()
     {
         string operations = File.ReadAllText(TestPaths.FromRepository(
             "src/Folio/ViewModels/WidgetViewModel.Operations.cs"));
 
-        // Three scope consumers: the two bulk import loops and the move-out
-        // handler (drag-out is the mirror amplifier of the import; both pay
-        // the same per-item derived work without the scope).
-        Assert.Equal(3, CountOccurrences(operations, "EnterItemMutationScope()"));
+        string surface = File.ReadAllText(TestPaths.FromRepository(
+            "src/Folio/Controls/WidgetContents/FileSurfaceContent.xaml.cs"));
+        Assert.Contains("await ViewModel.ApplyImportedTransferResultsAsync(", surface, StringComparison.Ordinal);
+        Assert.Equal(2, CountOccurrences(operations, "EnterItemMutationScope()"));
         // The transfer-results batch must finalize even when an upsert
         // throws: scope disposal sits in a finally alongside the perf log.
         Assert.Contains(

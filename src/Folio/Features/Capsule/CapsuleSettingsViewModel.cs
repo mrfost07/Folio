@@ -236,13 +236,15 @@ public sealed partial class CapsuleSettingsViewModel : ObservableObject
             [
                 CapsuleOptionKinds.ContentModeMinimal,
                 CapsuleOptionKinds.ContentModeSummary,
-                CapsuleOptionKinds.ContentModeSmart
+                CapsuleOptionKinds.ContentModeSmart,
+                CapsuleOptionKinds.ContentModeTitleOnly
             ];
             _cachedContentModeNames ??=
             [
                 _localize("Settings.CompactContent.Minimal"),
                 _localize("Settings.CompactContent.Summary"),
-                _localize("Settings.CompactContent.Smart")
+                _localize("Settings.CompactContent.Smart"),
+                _localize("Settings.CompactContent.TitleOnly")
             ];
             return BuildOptions(values, _cachedContentModeNames);
         }

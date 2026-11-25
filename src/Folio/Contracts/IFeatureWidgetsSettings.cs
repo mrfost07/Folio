@@ -27,6 +27,7 @@ public static class MusicDisplayModes
     public const string Controls = "Controls";
     public const string RecordVertical = "RecordVertical";
     public const string RecordHorizontal = "RecordHorizontal";
+    public const string Studio = "Studio";
 }
 
 /// <summary>

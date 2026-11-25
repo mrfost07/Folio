@@ -18,9 +18,19 @@
 [![GitHub stars](https://img.shields.io/github/stars/mrfost07/Folio?style=flat&color=yellow)](https://github.com/mrfost07/Folio/stargazers)
 [![Downloads](https://img.shields.io/github/downloads/mrfost07/Folio/total?style=flat&color=brightgreen)](https://github.com/mrfost07/Folio/releases)
 
-![Folio Windows desktop organizer with file, todo, search, weather, and music widgets](docs/images/brand/readme-hero-1-3-7-dark-en.png)
+![Folio desktop mockup showing shortcuts, tasks, weather, search, and quick capture](docs/images/brand/folio-desktop-mockup.png)
 
-Folio organizes desktop files, maps existing folders, and keeps everyday tools close without replacing Explorer or changing how your files work. Its real-folder-backed widgets make it a modern open-source alternative to tools such as Stardock Fences, while Glance, todos, quick notes, search, weather, and music controls remain useful extras rather than the product's core promise.
+Folio adds file widgets and everyday tools to the Windows desktop. Drop files, apps, and folders into a widget to create shortcuts while keeping the originals in place. You can also map an existing folder to browse its contents directly.
+
+With the direct installer, select desktop items and right-click **Send to → Folio (one widget)** or **Folio (split by type)**. On Windows 11, **Send to** is under **Show more options**. The widgets contain shortcuts, and Explorer keeps the original icons and desktop layout.
+
+You can also select desktop icons and choose **Group desktop** or **Group by type** in the Folio tray menu. Folio uses the selected files, app shortcuts, and folders. Windows system icons such as **This PC** are skipped. To add items by dragging, drop them onto a Folio file widget.
+
+Hold **Ctrl+left Alt** before dragging one desktop icon onto another to create a widget containing both. Windows keeps drawing the original icons and handling ordinary drags.
+
+Choose **Hide originals** in the Folio tray menu to keep grouped desktop items out of desktop selection. Folio keeps their paths, uses Windows' Hidden attribute, and turns off **Hidden items** and **Auto arrange icons**. File Explorer also hides these items in its normal view. Removing a widget shortcut restores its original when no tracked shortcut remains. **Show originals** restores the tracked items and the previous Windows settings.
+
+Use **Collapse all to titles** in **Settings → Capsule mode** to turn widgets into small, name-only capsules.
 
 ## Mica and Acrylic on the desktop
 
@@ -57,9 +67,9 @@ Every release publishes a matching `.sha256` sidecar for each installer. Code si
 
 - Create managed file widgets backed by ordinary folders, or map an existing folder without moving it.
 - Use icon or list layouts, title styles, detail and path controls, manual or rule-based sorting, compact display density, per-widget icon size override, and one-line, two-line, or hidden file names. Widgets resize down to 50×50.
-- Reorder items directly, move or copy them into a folder item, and create a folder with automatic scrolling and inline naming. Manual order is restored after restart.
+- Reorder items directly and create folders with automatic scrolling and inline naming. Manual order is restored after restart.
 - Stack files manually, or let automatic grouping do it as a separate opt-in switch. A stack can expand inside the widget or open as an Adaptive, 3×3, or 5×5 popover that shares the grid's icon size, density, selection, and Ctrl+mouse-wheel behavior and stays within screen edges.
-- Drag files and shortcuts in or out, copy, cut, paste, rename, delete, and reveal in Explorer. Dragging can follow the Windows default copy-or-move decision, including cross-volume behavior and modifier-key shortcut creation, with native drop images and target descriptions. Drop files onto an application shortcut tile to open them with that application; drag-out modifier hints and result toasts can be turned off in Settings.
+- Drop files, apps, and folders to create shortcuts by default. Hold Ctrl to copy or Shift to move. To change the default, open **Settings → File widgets → Drag-and-drop behavior**. Drop files onto an application shortcut tile to open them with that application.
 - Shell copy and move operations show per-item progress while keeping the source, destination, and receiving folders protected from conflicting changes.
 - Move existing files into managed storage through a copy-first migration with preview, per-phase progress, verification, and resumable retry; the source is never auto-deleted. Choosing a storage root on a network drive, a removable disk, the system drive, or a desktop-overlapping folder warns up front.
 - Create shortcuts, permanently delete with confirmation and partial-result reporting, run a supported executable as administrator, or open the rest of the native Shell menu near the pointer.
@@ -170,9 +180,7 @@ Read the complete [changelog](CHANGELOG.md) or the [1.5.6 release notes](docs/re
 
 ## Current interface
 
-Settings pages fold low-frequency options into expandable accordions, and the built-in search box finds any setting. 
-
- ![Folio Shortcuts and interaction settings in English](docs/images/screenshots/en-us/shortcuts-interaction.png) |
+![Folio settings mockup showing the Create shortcut option under File widgets](docs/images/brand/folio-settings-mockup.png)
 
 ## Local-first data and privacy
 
@@ -238,7 +246,7 @@ Restore, test, and build the x64 Debug version:
 
 ```powershell
 dotnet restore .\Folio.sln -p:Platform=x64
-dotnet test .\Folio.Tests\Folio.Tests.csproj --configuration Debug --no-restore -p:Platform=x64 -v:minimal
+dotnet test .\tests\Folio.Tests\Folio.Tests.csproj --configuration Debug --no-restore -p:Platform=x64 -v:minimal
 dotnet build .\src\Folio\Folio.csproj --configuration Debug --no-restore -p:Platform=x64 -v:minimal
 ```
 
@@ -283,20 +291,18 @@ docs\releases               release copy and test checklists
 
 ## Feedback and localization
 
-Folio is currently developed and maintained by a solo developer. External pull requests are not being accepted at this stage so the project can keep a consistent architecture and clear copyright boundaries, but bug reports, feature requests, translations, and UI/UX feedback are welcome through [GitHub Issues](https://github.com/mrfost07/Folio/issues).
-
-Special thanks to [@magisph](https://github.com/magisph) for the Brazilian Portuguese localization.
+Folio is maintained by Mark Renier B. Fostanes. Bug reports, feature requests, translation feedback, and UI feedback are welcome through [GitHub Issues](https://github.com/mrfost07/Folio/issues).
 
 You can also visit [folio.fun](https://folio.fun) or use the contact information in the app's About page.
 
-## Author and license
+## Maintainer, upstream, and license
 
-- Developer: Mark Renier B. Fostanes (mrfost07)
+- Folio maintainer: Mark Renier B. Fostanes (mrfost07)
 - Contact: mfostanes@ssct.edu.ph
 - Repository: <https://github.com/mrfost07/Folio>
 - License: [GPL-3.0-only](LICENSE)
 
-Earlier Folio versions already published under the MIT License remain available under that license. The change is not retroactive.
+Folio is a modified distribution of [DeskBox](https://github.com/Tianyu199509/DeskBox) by Tianyu199509 and its contributors, first published as Folio on November 23, 2026. The original Brazilian Portuguese localization was contributed upstream by [@magisph](https://github.com/magisph). The inherited code and Folio modifications are distributed under GPL-3.0-only.
 
 
 ## Star history

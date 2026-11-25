@@ -193,7 +193,8 @@ public static class WidgetCompactBoundsCalculator
                 : ClampAlignedLogicalWidth(customWidth);
         }
 
-        if (string.Equals(
+        if (string.Equals(contentMode, SettingsService.WidgetCompactContentModeTitleOnly, StringComparison.Ordinal) ||
+            string.Equals(
                 contentMode,
                 SettingsService.WidgetCompactContentModeMinimal,
                 StringComparison.Ordinal))

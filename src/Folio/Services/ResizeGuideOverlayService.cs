@@ -660,13 +660,10 @@ public sealed class ResizeGuideOverlayService
         };
 
     /// <summary>
-    /// The tone a snap guide edge line draws with: the effective Folio
-    /// accent. Resizing/drag-snap feedback is deliberately the one drag-time
-    /// visual that keeps the theme color (2026-09-13).
+    /// The shared blue for move and resize snap guides.
     /// </summary>
     private static Windows.UI.Color GetHighlightColor() =>
-        App.Current?.ThemeService?.GetEffectiveAccentColor()
-        ?? AccentColorHelper.DefaultAccentColor;
+        AccentColorHelper.DefaultAccentColor;
 
     // ── Drag session state ──────────────────────────────────────────────
 

@@ -117,6 +117,7 @@ public sealed class NativeDropTarget : IDisposable
     private readonly IntPtr _hwnd;
     private readonly NativeDropTargetComObject _comObject;
     private readonly Func<bool> _defaultMoveProvider;
+    private readonly Func<bool>? _defaultShortcutProvider;
     private readonly Func<bool>? _followWindowsProvider;
     private readonly Func<uint, NativeDropDescriptionText?>? _dropDescriptionProvider;
     private readonly Func<bool>? _useShellVisualProvider;
@@ -298,11 +299,13 @@ public sealed class NativeDropTarget : IDisposable
         Func<bool>? defaultMoveProvider,
         Func<uint, NativeDropDescriptionText?>? dropDescriptionProvider,
         Func<bool>? useShellVisualProvider = null,
-        Func<bool>? followWindowsProvider = null)
+        Func<bool>? followWindowsProvider = null,
+        Func<bool>? defaultShortcutProvider = null)
     {
         _hwnd = hwnd;
         _defaultMoveProvider = defaultMoveProvider ?? (() => true);
         _followWindowsProvider = followWindowsProvider;
+        _defaultShortcutProvider = defaultShortcutProvider;
         _dropDescriptionProvider = dropDescriptionProvider;
         _useShellVisualProvider = useShellVisualProvider;
         _comObject = new NativeDropTargetComObject(this);
@@ -409,7 +412,8 @@ public sealed class NativeDropTarget : IDisposable
             HasShellApplicationData || HasShellNamespaceData,
             _defaultMoveProvider(),
             followWindows: GetFollowWindowsSetting(),
-            sameVolume: GetSameVolume(_dragPathHints));
+            sameVolume: GetSameVolume(_dragPathHints),
+            defaultShortcut: _defaultShortcutProvider?.Invoke() == true);
         if (HasFileData)
         {
             RetainActiveDataObject(dataObject);
@@ -452,7 +456,8 @@ public sealed class NativeDropTarget : IDisposable
             HasShellApplicationData || HasShellNamespaceData,
             _defaultMoveProvider(),
             followWindows: GetFollowWindowsSetting(),
-            sameVolume: GetSameVolume(_dragPathHints));
+            sameVolume: GetSameVolume(_dragPathHints),
+            defaultShortcut: _defaultShortcutProvider?.Invoke() == true);
         UpdateShellVisual(point, effect);
         return S_OK;
     }
@@ -509,6 +514,7 @@ public sealed class NativeDropTarget : IDisposable
         bool virtualFileDrop = HasVirtualFileData;
         bool defaultMove = _defaultMoveProvider();
         bool followWindows = GetFollowWindowsSetting();
+        bool defaultShortcut = _defaultShortcutProvider?.Invoke() == true;
         bool rightButtonDrag = _rightButtonDragActive ||
             NativeDropEffectPolicy.IsRightButtonDrag(keyState);
         uint feedbackEffect = NativeDropEffectPolicy.ResolveFeedbackEffect(
@@ -519,7 +525,8 @@ public sealed class NativeDropTarget : IDisposable
             shellApplicationDrop || shellNamespaceDrop,
             defaultMove,
             followWindows: followWindows,
-            sameVolume: GetSameVolume(_dragPathHints));
+            sameVolume: GetSameVolume(_dragPathHints),
+            defaultShortcut: defaultShortcut);
         if ((virtualFileDrop || shellApplicationDrop || shellNamespaceDrop) &&
             dataObject != 0)
         {
@@ -569,7 +576,8 @@ public sealed class NativeDropTarget : IDisposable
         bool shortcutRequested = createdShellApplicationLinks ||
             NativeDropEffectPolicy.ShouldCreateMappedShortcut(
                 containsTemporaryFiles,
-                keyState);
+                keyState,
+                defaultShortcut);
         if (_shellVisualActive)
         {
             _dropImageManager?.Drop(
@@ -694,7 +702,7 @@ public sealed class NativeDropTarget : IDisposable
             effect = NativeDropEffectPolicy.ResolveCompletionEffect(
                 hasExtractedPaths: true,
                 allowedEffects,
-                createdShellApplicationLinks);
+                createdShellApplicationLinks || (shortcutRequested && !rightButtonDrag));
         }
         else
         {

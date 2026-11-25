@@ -43,6 +43,7 @@ public sealed class JsonSerializationBaselineContractTests : IDisposable
             ["src/Folio/Services/DesktopAutoOrganizationSuppressionRegistry.cs"] = 2,
             ["src/Folio/Services/DesktopOrganizationHistoryStore.cs"] = 2,
             ["src/Folio/Services/DesktopOrganizationRecoveryStore.cs"] = 2,
+            ["src/Folio/Services/DesktopOriginalsStore.cs"] = 2,
             ["src/Folio/Services/FeedbackService.cs"] = 4,
             ["src/Folio/Services/GlanceImageService.cs"] = 2,
             ["src/Folio/Services/GlanceWidgetStore.cs"] = 8,
@@ -77,6 +78,7 @@ public sealed class JsonSerializationBaselineContractTests : IDisposable
             ["src/Folio/Services/WeatherService.cs"] = 5,
             ["src/Folio/Services/WidgetFileStackSettings.cs"] = 7,
             ["src/Folio/Services/WidgetLayoutStore.cs"] = 2,
+            ["src/Folio/Services/WidgetManager.PlacementTemplates.cs"] = 2,
             // 3: the title-icon asset store's recent-emoji state file
             // (load deserialize, add deserialize, atomic save serialize).
             ["src/Folio/Services/WidgetTitleIconAssetStore.cs"] = 3
@@ -99,8 +101,8 @@ public sealed class JsonSerializationBaselineContractTests : IDisposable
             Assert.Equal(expectedCount, actual[path]);
         }
 
-        Assert.Equal(44, actual.Count);
-        Assert.Equal(111, actual.Values.Sum());
+        Assert.Equal(46, actual.Count);
+        Assert.Equal(115, actual.Values.Sum());
 
         string[] expectedContextOwners =
         [
@@ -119,6 +121,7 @@ public sealed class JsonSerializationBaselineContractTests : IDisposable
             "src/Folio/Services/AppUpdateService.cs",
             "src/Folio/Services/DesktopOrganizationHistoryStore.cs",
             "src/Folio/Services/DesktopOrganizationRecoveryStore.cs",
+            "src/Folio/Services/DesktopOriginalsStore.cs",
             "src/Folio/Services/FeedbackService.cs",
             "src/Folio/Services/FolioDataBackupService.cs",
             "src/Folio/Services/FolioDiagnosticsBundleService.cs",
@@ -151,7 +154,7 @@ public sealed class JsonSerializationBaselineContractTests : IDisposable
             .Order()
             .ToArray();
 
-        Assert.Equal(38, actualContextOwners.Length);
+        Assert.Equal(39, actualContextOwners.Length);
         Assert.Equal(expectedContextOwners, actualContextOwners);
     }
 

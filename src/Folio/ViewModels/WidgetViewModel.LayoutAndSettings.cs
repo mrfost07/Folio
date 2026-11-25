@@ -72,7 +72,9 @@ public partial class WidgetViewModel
             ? _localizationService.T("Widget.Empty.ManagedTitle")
             : _localizationService.T("Widget.Empty.MappedTitle");
         EmptyStateText = isManagedStorage
-            ? _localizationService.Format("Widget.Empty.ManagedText", managedAction, mappedFolderName)
+            ? _settingsService.Settings.FileWidget.ManagedDropAction == SettingsService.ManagedDropActionShortcut
+                ? _localizationService.T("Widget.Empty.ShortcutText")
+                : _localizationService.Format("Widget.Empty.ManagedText", managedAction, mappedFolderName)
             : _localizationService.Format("Widget.Empty.MappedText", mappedFolderName);
         OnPropertyChanged(nameof(SortModeLabel));
         UpdateFolderNavigationPresentation();
