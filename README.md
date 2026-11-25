@@ -18,7 +18,9 @@
 [![GitHub stars](https://img.shields.io/github/stars/mrfost07/Folio?style=flat&color=yellow)](https://github.com/mrfost07/Folio/stargazers)
 [![Downloads](https://img.shields.io/github/downloads/mrfost07/Folio/total?style=flat&color=brightgreen)](https://github.com/mrfost07/Folio/releases)
 
-![Folio desktop mockup showing shortcuts, tasks, weather, search, and quick capture](docs/images/brand/folio-desktop-mockup.png)
+![Folio on the Windows desktop with app, file, folder, and weather widgets and desktop search open](docs/images/screenshots/en-us/folio-desktop.jpg)
+
+[Watch the desktop demo](https://mrfost07.github.io/folio/#demo)
 
 Folio adds file widgets and everyday tools to the Windows desktop. Drop files, apps, and folders into a widget to create shortcuts while keeping the originals in place. You can also map an existing folder to browse its contents directly.
 
@@ -178,9 +180,11 @@ Read the complete [changelog](CHANGELOG.md) or the [1.5.7 release notes](docs/re
 
 Read the complete [changelog](CHANGELOG.md) or the [1.5.6 release notes](docs/releases/v1.5.6.md).
 
-## Current interface
+## Widget menus
 
-![Folio settings mockup showing the Create shortcut option under File widgets](docs/images/brand/folio-settings-mockup.png)
+![Folio's Apps widget with its three-dot menu and Widget style submenu open](docs/images/screenshots/en-us/folio-widget-menus.jpg)
+
+[Watch the widget menus demo](https://mrfost07.github.io/folio/#widget-menus)
 
 ## Local-first data and privacy
 

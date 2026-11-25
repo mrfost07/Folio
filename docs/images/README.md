@@ -20,9 +20,9 @@ screenshots/en-us/           English UI screenshots
 ## README assets
 
 ```text
-brand/folio-desktop-mockup.png
-brand/folio-settings-mockup.png
 brand/logo-512.png
+screenshots/en-us/folio-desktop.jpg
+screenshots/en-us/folio-widget-menus.jpg
 ```
 
-The mockups illustrate the Folio desktop and file-widget settings. The `screenshots/` directories hold older release assets.
+The English screenshots come from the desktop and widget menus demos.
